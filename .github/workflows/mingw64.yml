@@ -28,7 +28,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
@@ -59,24 +59,29 @@ jobs:
         run: |
           cd
           git clone https://github.com/niXman/mingw-builds.git -b develop --depth 1
-        
+
+      - name: Patch build scripts
+        run: |
+          cd ~/mingw-builds
+          git apply $GITHUB_WORKSPACE/build-patch/https.patch
+
       - name: Build (SJLJ)
         if: ${{ matrix.arch == "i686" }}
         run: |
-          cd ./mingw-builds
+          cd ~/mingw-builds
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
 
       - name: Build (SEH)
         if: ${{ matrix.arch == "x86_64" }}
         run: |
-          cd ./mingw-builds
+          cd ~/mingw-builds
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
 
       - name: Move artifacts
         run: |
           mkdir /c/mingw64_artifacts
           mv ~/mingw-${{ matrix.mode }}/archives/*.7z /c/mingw64_artifacts
-          
+
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.mode }} (${{ matrix.arch }}, ${{ mode.threading }})
