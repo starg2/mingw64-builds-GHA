@@ -66,13 +66,13 @@ jobs:
           git apply $GITHUB_WORKSPACE/build-patch/https.patch
 
       - name: Build (SJLJ)
-        if: ${{ matrix.arch == "i686" }}
+        if: ${{ matrix.arch == 'i686' }}
         run: |
           cd ~/mingw-builds
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
 
       - name: Build (SEH)
-        if: ${{ matrix.arch == "x86_64" }}
+        if: ${{ matrix.arch == 'x86_64' }}
         run: |
           cd ~/mingw-builds
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
