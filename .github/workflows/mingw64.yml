@@ -84,5 +84,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.mode }} (${{ matrix.arch }}, ${{ mode.threading }})
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}
           path: C:/mingw64_artifacts/*.7z
