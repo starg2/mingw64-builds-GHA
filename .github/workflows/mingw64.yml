@@ -26,9 +26,6 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
-
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
@@ -54,6 +51,13 @@ jobs:
             texinfo
             autogen
             dejagnu
+
+      - name: Change autocrlf
+        run: git config --global core.autocrlf input
+        shell: bash
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
 
       - name: Get build scripts
         run: |
