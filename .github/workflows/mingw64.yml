@@ -16,6 +16,7 @@ jobs:
         mode: ["gcc-11.2.0", "gcc-10.3.0", "gcc-9.4.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
+        crt: ["msvcrt", "ucrt"]
 
     defaults:
       run:
@@ -73,13 +74,13 @@ jobs:
         if: ${{ matrix.arch == 'i686' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
 
       - name: Build (SEH)
         if: ${{ matrix.arch == 'x86_64' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
 
       - name: Move artifacts
         run: |
@@ -88,5 +89,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.crt }}
           path: C:/mingw64_artifacts/*.7z
