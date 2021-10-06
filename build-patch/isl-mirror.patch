@@ -1,0 +1,14 @@
+diff --git a/scripts/isl.sh b/scripts/isl.sh
+index a578dff..f7dba43 100644
+--- a/scripts/isl.sh
++++ b/scripts/isl.sh
+@@ -57,7 +57,8 @@ fi
+ PKG_NAME=$BUILD_ARCHITECTURE-isl-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=isl-${PKG_VERSION}
+ PKG_URLS=(
+-	"http://isl.gforge.inria.fr/isl-${PKG_VERSION}${PKG_TYPE}"
++	#"http://isl.gforge.inria.fr/isl-${PKG_VERSION}${PKG_TYPE}"
++	"https://mirror.msys2.org/mingw/sources/mingw-w64-isl-${PKG_VERSION}-1.src.tar.gz"
+ )
+ 
+ PKG_PRIORITY=prereq
