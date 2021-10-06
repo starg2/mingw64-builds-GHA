@@ -69,6 +69,7 @@ jobs:
         run: |
           cd ~/mingw-builds
           git apply $GITHUB_WORKSPACE/build-patch/https.patch
+          git apply $GITHUB_WORKSPACE/build-patch/isl-mirror.patch
 
       - name: Build (SJLJ)
         if: ${{ matrix.arch == 'i686' }}
