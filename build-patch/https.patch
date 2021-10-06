@@ -1,3 +1,15 @@
+diff --git a/library/functions.sh b/library/functions.sh
+index 675ecc1..3460318 100644
+--- a/library/functions.sh
++++ b/library/functions.sh
+@@ -438,7 +438,6 @@ function func_download {
+ 					--tries=$_WGET_TRIES \
+ 					--timeout=$_WGET_TIMEOUT \
+ 					--wait=$_WGET_WAIT \
+-					--no-check-certificate \
+ 					$_url -O $_lib_name > $_log_name 2>&1
+ 				_result=$?
+ 			}
 diff --git a/scripts/clang-3.3.sh b/scripts/clang-3.3.sh
 index f203ce1..05d1ca4 100644
 --- a/scripts/clang-3.3.sh
