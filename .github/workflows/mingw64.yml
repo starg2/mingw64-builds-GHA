@@ -75,13 +75,13 @@ jobs:
         if: ${{ matrix.arch == 'i686' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
 
       - name: Build (SEH)
         if: ${{ matrix.arch == 'x86_64' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
 
       - name: Move artifacts
         run: |
