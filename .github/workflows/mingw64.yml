@@ -16,7 +16,7 @@ jobs:
         mode: ["gcc-11.2.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
-        crt: ["msvcrt", "ucrt"]
+        crt: ["msvcrt"]
 
     defaults:
       run:
