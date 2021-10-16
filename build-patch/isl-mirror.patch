@@ -1,14 +1,15 @@
 diff --git a/scripts/isl.sh b/scripts/isl.sh
-index a578dff..9cce971 100644
+index a578dff..743da6e 100644
 --- a/scripts/isl.sh
 +++ b/scripts/isl.sh
-@@ -57,7 +57,8 @@ fi
+@@ -57,7 +57,9 @@ fi
  PKG_NAME=$BUILD_ARCHITECTURE-isl-${PKG_VERSION}-$LINK_TYPE_SUFFIX
  PKG_DIR_NAME=isl-${PKG_VERSION}
  PKG_URLS=(
 -	"http://isl.gforge.inria.fr/isl-${PKG_VERSION}${PKG_TYPE}"
 +	#"http://isl.gforge.inria.fr/isl-${PKG_VERSION}${PKG_TYPE}"
-+	"https://mirrors.kernel.org/slackware/slackware64-current/source/l/isl/isl-${PKG_VERSION}${PKG_TYPE}"
++	#"https://mirrors.kernel.org/slackware/slackware64-current/source/l/isl/isl-${PKG_VERSION}${PKG_TYPE}"
++	"https://libisl.sourceforge.io/isl-${PKG_VERSION}${PKG_TYPE}"
  )
  
  PKG_PRIORITY=prereq
