@@ -1,0 +1,29 @@
+diff --git a/patches/isl/isl-prefer-snprintf.patch b/patches/isl/isl-prefer-snprintf.patch
+new file mode 100644
+index 0000000..bf8030e
+--- /dev/null
++++ b/patches/isl/isl-prefer-snprintf.patch
+@@ -0,0 +1,11 @@
++--- isl-0.24/isl_config_post.h.orig	2021-10-08 20:08:41.063167600 +0900
+++++ isl-0.24/isl_config_post.h	2021-10-08 20:09:24.755890100 +0900
++@@ -27,7 +27,7 @@
++ #define strncasecmp _strnicmp
++ #endif
++ 
++-#if HAVE_DECL__SNPRINTF
+++#if !HAVE_DECL_SNPRINTF && HAVE_DECL__SNPRINTF
++ #define snprintf _snprintf
++ #endif
++ 
+diff --git a/scripts/isl.sh b/scripts/isl.sh
+index a578dff..b608ff9 100644
+--- a/scripts/isl.sh
++++ b/scripts/isl.sh
+@@ -66,6 +66,7 @@ PKG_PRIORITY=prereq
+ 
+ PKG_PATCHES=(
+ 	$([[ ${PKG_VERSION} == 0.12.2 ]] && echo "isl/isl-0.12-no-undefined.patch" || echo "isl/isl-0.14.1-no-undefined.patch" )
++	isl/isl-prefer-snprintf.patch
+ )
+ 
+ #
