@@ -76,7 +76,7 @@ jobs:
         if: ${{ matrix.arch == 'i686' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=~/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
           rm -rf ~/mingw-builds/toolchains/mingw32
           cp -r ~/mingw-stage1/${{ matrix.arch }}-*/mingw32 ~/mingw-builds/toolchains/
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --no-extras --logviewer-command=cat --wait-for-logviewer
@@ -85,7 +85,7 @@ jobs:
         if: ${{ matrix.arch == 'x86_64' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=~/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
           rm -rf ~/mingw-builds/toolchains/mingw64
           cp -r ~/mingw-stage1/${{ matrix.arch }}-*/mingw64 ~/mingw-builds/toolchains/
           ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --no-extras --logviewer-command=cat --wait-for-logviewer
