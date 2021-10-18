@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        mode: ["gcc-11.2.0"]
+        mode: ["gcc-11.2.0", "gcc-10.3.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
         crt: ["msvcrt"]
