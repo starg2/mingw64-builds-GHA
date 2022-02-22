@@ -76,19 +76,6 @@ index a5a759a..2937598 100644
  )
  PKG_PRIORITY=prereq
  
-diff --git a/scripts/expat.sh b/scripts/expat.sh
-index 978df77..d43727c 100644
---- a/scripts/expat.sh
-+++ b/scripts/expat.sh
-@@ -40,7 +40,7 @@ PKG_NAME=expat-${PKG_VERSION}
- PKG_DIR_NAME=expat-${PKG_VERSION}
- PKG_TYPE=.tar.xz
- PKG_URLS=(
--	"http://sourceforge.net/projects/expat/files/expat/${PKG_VERSION}/${PKG_NAME}${PKG_TYPE}"
-+	"https://sourceforge.net/projects/expat/files/expat/${PKG_VERSION}/${PKG_NAME}${PKG_TYPE}"
- )
- 
- PKG_PRIORITY=extra
 diff --git a/scripts/gcc-10-branch.sh b/scripts/gcc-10-branch.sh
 index 742a7fb..b4f1f8a 100644
 --- a/scripts/gcc-10-branch.sh
