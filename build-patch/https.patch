@@ -343,19 +343,6 @@ index 6c90d5c..4e88edb 100644
  )
  
  PKG_PRIORITY=extra
-diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index d715aa4..e5fd15f 100644
---- a/scripts/python-3.sh
-+++ b/scripts/python-3.sh
-@@ -40,7 +40,7 @@ PKG_NAME=Python-${PKG_VERSION}
- PKG_DIR_NAME=Python-${PKG_VERSION}
- PKG_TYPE=.tar.xz
- PKG_URLS=(
--	"http://www.python.org/ftp/python/${PKG_VERSION}/Python-${PKG_VERSION}${PKG_TYPE}"
-+	"https://www.python.org/ftp/python/${PKG_VERSION}/Python-${PKG_VERSION}${PKG_TYPE}"
- )
- 
- PKG_PRIORITY=extra
 diff --git a/scripts/tcl.sh b/scripts/tcl.sh
 index 651dbfa..af05ccc 100644
 --- a/scripts/tcl.sh
