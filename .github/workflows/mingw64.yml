@@ -71,6 +71,7 @@ jobs:
           git apply $GITHUB_WORKSPACE/build-patch/https.patch
           git apply $GITHUB_WORKSPACE/build-patch/isl-mirror.patch
           git apply $GITHUB_WORKSPACE/build-patch/patch-isl.patch
+          git apply $GITHUB_WORKSPACE/build-patch/update-expat.patch
 
       - name: Build (SJLJ)
         if: ${{ matrix.arch == 'i686' }}
