@@ -17,6 +17,9 @@ jobs:
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
         crt: ["msvcrt"]
+        exclude:
+          - mode: "gcc-10.3.0"
+            arch: "i686"
 
     defaults:
       run:
