@@ -7,7 +7,7 @@ index 978df77..583b634 100644
  # **************************************************************************
  
 -PKG_VERSION=2.4.1
-+PKG_VERSION=2.4.5
++PKG_VERSION=2.4.6
  PKG_NAME=expat-${PKG_VERSION}
  PKG_DIR_NAME=expat-${PKG_VERSION}
  PKG_TYPE=.tar.xz
