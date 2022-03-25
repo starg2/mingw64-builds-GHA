@@ -16,7 +16,8 @@ jobs:
         mode: ["gcc-11.2.0", "gcc-10.3.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
-        crt: ["msvcrt"]
+        exceptions: ["dwarfseh", "sjlj"]
+        crt: ["msvcrt", "ucrt"]
         exclude:
           - mode: "gcc-10.3.0"
             arch: "i686"
@@ -75,17 +76,18 @@ jobs:
           git apply $GITHUB_WORKSPACE/build-patch/patch-isl.patch
           git apply $GITHUB_WORKSPACE/build-patch/update-expat.patch
 
-      - name: Build (SJLJ)
-        if: ${{ matrix.arch == 'i686' }}
+      - name: Build Stage 1
+        if: ${{ matrix.crt == 'ucrt' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=sjlj --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
+          rm -rf ~/mingw-builds/toolchains/mingw*
+          cp -r ~/mingw-stage1/${{ matrix.arch }}-*/mingw* ~/mingw-builds/toolchains/
 
-      - name: Build (SEH)
-        if: ${{ matrix.arch == 'x86_64' }}
+      - name: Build
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=seh --rt-version=trunk --threads=${{ matrix.threading }} --no-multilib --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
 
       - name: Move artifacts
         run: |
@@ -94,5 +96,5 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.crt }}
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
           path: C:/mingw64_artifacts/*.7z
