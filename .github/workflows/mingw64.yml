@@ -74,6 +74,7 @@ jobs:
           cd ~/mingw-builds
           git apply $GITHUB_WORKSPACE/build-patch/https.patch
           git apply $GITHUB_WORKSPACE/build-patch/patch-isl.patch
+          git apply $GITHUB_WORKSPACE/build-patch/skip-time_test.patch
           git apply $GITHUB_WORKSPACE/build-patch/update-expat.patch
 
       - name: Build Stage 1
