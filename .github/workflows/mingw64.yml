@@ -81,14 +81,14 @@ jobs:
         if: ${{ matrix.crt == 'ucrt' }}
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-multilib --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
           rm -rf ~/mingw-builds/toolchains/mingw*
           cp -r ~/mingw-stage1/${{ matrix.arch }}-*/mingw* ~/mingw-builds/toolchains/
 
       - name: Build
         run: |
           cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
 
       - name: Move artifacts
         run: |
