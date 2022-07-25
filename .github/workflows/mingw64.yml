@@ -13,7 +13,7 @@ jobs:
   build:
     strategy:
       matrix:
-        mode: ["gcc-11.2.0", "gcc-10.3.0"]
+        mode: ["gcc-12.1.0", "gcc-11.3.0", "gcc-10.3.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
         exceptions: ["dwarfseh", "sjlj"]
@@ -56,6 +56,7 @@ jobs:
             texinfo
             autogen
             dejagnu
+            pkgconf
 
       - name: Change autocrlf
         run: git config --global core.autocrlf input
@@ -75,7 +76,6 @@ jobs:
           git apply $GITHUB_WORKSPACE/build-patch/https.patch
           git apply $GITHUB_WORKSPACE/build-patch/patch-isl.patch
           git apply $GITHUB_WORKSPACE/build-patch/skip-time_test.patch
-          git apply $GITHUB_WORKSPACE/build-patch/update-expat.patch
 
       - name: Build Stage 1
         if: ${{ matrix.crt == 'ucrt' }}
