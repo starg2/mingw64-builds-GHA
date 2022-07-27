@@ -1,0 +1,861 @@
+diff --git a/build b/build
+index b737676..8d51e68 100755
+--- a/build
++++ b/build
+@@ -316,7 +316,7 @@ while [[ $# > 0 ]]; do
+                     RUNTIME_BRANCH="v10.x"
+                 ;;
+ 				trunk)
+-					RUNTIME_VERSION=v9
++					RUNTIME_VERSION=v10
+ 					RUNTIME_BRANCH="master"
+ 				;;
+ 				v3.3.0)
+diff --git a/library/config-win.sh b/library/config-win.sh
+index 0192bff..11e2f43 100644
+--- a/library/config-win.sh
++++ b/library/config-win.sh
+@@ -101,6 +101,7 @@ function func_test_installed_packages {
+ 		texinfo
+ 		autogen
+ 		dejagnu
++		pkgconf
+ 	)
+ 
+ 	echo "--> installing required packages..."
+diff --git a/library/config.sh b/library/config.sh
+index 9e924c8..46e44ab 100644
+--- a/library/config.sh
++++ b/library/config.sh
+@@ -189,10 +189,10 @@ esac
+ 
+ # **************************************************************************
+ 
+-echo -n "-> Checking for installed packages... "
+-func_test_installed_packages
+-[[ $? == 1 ]] && exit 1
+-echo "done"
++#echo -n "-> Checking for installed packages... "
++#func_test_installed_packages
++#[[ $? == 1 ]] && exit 1
++#echo "done"
+ 
+ # **************************************************************************
+ 
+diff --git a/library/functions.sh b/library/functions.sh
+index 5306d07..81f1c01 100644
+--- a/library/functions.sh
++++ b/library/functions.sh
+@@ -438,7 +438,6 @@ function func_download {
+ 					--tries=$_WGET_TRIES \
+ 					--timeout=$_WGET_TIMEOUT \
+ 					--wait=$_WGET_WAIT \
+-					--no-check-certificate \
+ 					$_url -O $_lib_name > $_log_name 2>&1
+ 				_result=$?
+ 			}
+diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
+index 60fe243..d692975 100644
+--- a/scripts/bzip2.sh
++++ b/scripts/bzip2.sh
+@@ -35,14 +35,14 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.0.6
++PKG_VERSION=1.0.8
+ PKG_NAME=bzip2-${PKG_VERSION}
+ PKG_DIR_NAME=bzip2-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+ 	# Original website is gone.
+ 	#"http://www.bzip.org/${PKG_VERSION}/${PKG_DIR_NAME}${PKG_TYPE}"
+-	"https://sources.archlinux.org/other/packages/bzip2/${PKG_DIR_NAME}${PKG_TYPE}"
++	"https://sourceware.org/pub/bzip2/${PKG_DIR_NAME}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+@@ -50,10 +50,10 @@ PKG_PRIORITY=extra
+ #
+ 
+ PKG_PATCHES=(
+-	bzip2/bzip2-1.0.4-bzip2recover.patch
++	#bzip2/bzip2-1.0.4-bzip2recover.patch
+ 	bzip2/bzip2-1.0.6-autoconfiscated.patch
+ 	bzip2/bzip2-use-cdecl-calling-convention.patch
+-	bzip2/bzip2-1.0.5-slash.patch
++	#bzip2/bzip2-1.0.5-slash.patch
+ )
+ 
+ #
+diff --git a/scripts/clang-3.3.sh b/scripts/clang-3.3.sh
+index f203ce1..05d1ca4 100644
+--- a/scripts/clang-3.3.sh
++++ b/scripts/clang-3.3.sh
+@@ -40,9 +40,9 @@ PKG_NAME=llvm-${PKG_VERSION}.src
+ PKG_DIR_NAME=llvm-${PKG_VERSION}.src
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"http://llvm.org/releases/${PKG_VERSION}/llvm-${PKG_VERSION}.src${PKG_TYPE}"
+-	"http://llvm.org/releases/${PKG_VERSION}/cfe-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/tools"
+-	"http://llvm.org/releases/${PKG_VERSION}/compiler-rt-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/projects"
++	"https://llvm.org/releases/${PKG_VERSION}/llvm-${PKG_VERSION}.src${PKG_TYPE}"
++	"https://llvm.org/releases/${PKG_VERSION}/cfe-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/tools"
++	"https://llvm.org/releases/${PKG_VERSION}/compiler-rt-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/projects"
+ )
+ 
+ #
+diff --git a/scripts/clang-3.4.sh b/scripts/clang-3.4.sh
+index 9b08b79..547a3cc 100644
+--- a/scripts/clang-3.4.sh
++++ b/scripts/clang-3.4.sh
+@@ -40,9 +40,9 @@ PKG_NAME=llvm-${PKG_VERSION}
+ PKG_DIR_NAME=llvm-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"http://llvm.org/releases/${PKG_VERSION}/llvm-${PKG_VERSION}.src${PKG_TYPE}"
+-	"http://llvm.org/releases/${PKG_VERSION}/clang-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/tools"
+-	"http://llvm.org/releases/${PKG_VERSION}/compiler-rt-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/projects"
++	"https://llvm.org/releases/${PKG_VERSION}/llvm-${PKG_VERSION}.src${PKG_TYPE}"
++	"https://llvm.org/releases/${PKG_VERSION}/clang-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/tools"
++	"https://llvm.org/releases/${PKG_VERSION}/compiler-rt-${PKG_VERSION}.src${PKG_TYPE}|dir:$PKG_NAME/projects"
+ )
+ 
+ #
+diff --git a/scripts/clang-git.sh b/scripts/clang-git.sh
+index 18172c9..bb6137c 100644
+--- a/scripts/clang-git.sh
++++ b/scripts/clang-git.sh
+@@ -40,10 +40,10 @@ PKG_DIR_NAME=llvm-git
+ PKG_TYPE=git
+ 
+ PKG_URLS=(
+-	"http://llvm.org/git/llvm.git|repo:$PKG_TYPE|module:$PKG_NAME"
+-	"http://llvm.org/git/clang.git|repo:$PKG_TYPE|dir:$PKG_NAME/tools|module:clang"
+-	"http://llvm.org/git/compiler-rt.git|repo:$PKG_TYPE|dir:$PKG_NAME/projects|module:compiler-rt"
+-	"http://llvm.org/git/test-suite.git|repo:$PKG_TYPE|dir:$PKG_NAME/projects|module:test-suite"
++	"https://llvm.org/git/llvm.git|repo:$PKG_TYPE|module:$PKG_NAME"
++	"https://llvm.org/git/clang.git|repo:$PKG_TYPE|dir:$PKG_NAME/tools|module:clang"
++	"https://llvm.org/git/compiler-rt.git|repo:$PKG_TYPE|dir:$PKG_NAME/projects|module:compiler-rt"
++	"https://llvm.org/git/test-suite.git|repo:$PKG_TYPE|dir:$PKG_NAME/projects|module:test-suite"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/cloog.sh b/scripts/cloog.sh
+index a5a759a..2937598 100644
+--- a/scripts/cloog.sh
++++ b/scripts/cloog.sh
+@@ -40,7 +40,7 @@ PKG_NAME=$BUILD_ARCHITECTURE-cloog-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=cloog-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"http://www.bastoul.net/cloog/pages/download/cloog-${PKG_VERSION}${PKG_TYPE}"
++	"https://www.bastoul.net/cloog/pages/download/cloog-${PKG_VERSION}${PKG_TYPE}"
+ )
+ PKG_PRIORITY=prereq
+ 
+diff --git a/scripts/expat.sh b/scripts/expat.sh
+index f4af488..14f6990 100644
+--- a/scripts/expat.sh
++++ b/scripts/expat.sh
+@@ -35,12 +35,12 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=2.4.7
++PKG_VERSION=2.4.8
+ PKG_NAME=expat-${PKG_VERSION}
+ PKG_DIR_NAME=expat-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"http://sourceforge.net/projects/expat/files/expat/${PKG_VERSION}/${PKG_NAME}${PKG_TYPE}"
++	"https://sourceforge.net/projects/expat/files/expat/${PKG_VERSION}/${PKG_NAME}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/gcc-10-branch.sh b/scripts/gcc-10-branch.sh
+index 56c4b73..0b02bfa 100644
+--- a/scripts/gcc-10-branch.sh
++++ b/scripts/gcc-10-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-10.3.0.sh b/scripts/gcc-10.3.0.sh
+index fd4b633..d8693bd 100644
+--- a/scripts/gcc-10.3.0.sh
++++ b/scripts/gcc-10.3.0.sh
+@@ -61,6 +61,9 @@ PKG_PATCHES=(
+ 	gcc/gcc-10-ktietz-libgomp.patch
+ 	gcc/gcc-libgomp-ftime64.patch
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
++	$( [[ $RUNTIME_MAJOR_VERSION -ge 10 ]] \
++		&& echo "gcc/0001-gcc-config-i386-mingw32.h-Ensure-lmsvcrt-precede-lke.patch" \
++	)
+ )
+ 
+ #
+diff --git a/scripts/gcc-10.4.0.sh b/scripts/gcc-10.4.0.sh
+new file mode 100644
+index 0000000..3991e3b
+--- /dev/null
++++ b/scripts/gcc-10.4.0.sh
+@@ -0,0 +1,159 @@
++
++#
++# The BSD 3-Clause License. http://www.opensource.org/licenses/BSD-3-Clause
++#
++# This file is part of MinGW-W64(mingw-builds: https://github.com/niXman/mingw-builds) project.
++# Copyright (c) 2011-2021 by niXman (i dotty nixman doggy gmail dotty com)
++# Copyright (c) 2012-2015 by Alexpux (alexpux doggy gmail dotty com)
++# All rights reserved.
++#
++# Project: MinGW-W64 ( http://sourceforge.net/projects/mingw-w64/ )
++#
++# Redistribution and use in source and binary forms, with or without
++# modification, are permitted provided that the following conditions are met:
++# - Redistributions of source code must retain the above copyright
++#     notice, this list of conditions and the following disclaimer.
++# - Redistributions in binary form must reproduce the above copyright
++#     notice, this list of conditions and the following disclaimer in
++#     the documentation and/or other materials provided with the distribution.
++# - Neither the name of the 'MinGW-W64' nor the names of its contributors may
++#     be used to endorse or promote products derived from this software
++#     without specific prior written permission.
++#
++# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
++# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
++# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
++# A PARTICULAR PURPOSE ARE DISCLAIMED.
++# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
++# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
++# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
++# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
++# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
++# USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++#
++
++# **************************************************************************
++
++PKG_VERSION=10.4.0
++PKG_NAME=gcc-${PKG_VERSION}
++PKG_DIR_NAME=gcc-${PKG_VERSION}
++PKG_TYPE=.tar.xz
++PKG_URLS=(
++	"https://ftp.gnu.org/gnu/gcc/gcc-${PKG_VERSION}/gcc-${PKG_VERSION}${PKG_TYPE}"
++)
++
++PKG_PRIORITY=main
++
++#
++
++PKG_PATCHES=(
++	gcc/gcc-4.7-stdthreads.patch
++	gcc/gcc-5.1-iconv.patch
++	gcc/gcc-4.8-libstdc++export.patch
++	gcc/gcc-4.8.2-fix-for-windows-not-minding-non-existant-parent-dirs.patch
++	gcc/gcc-4.8.2-windows-lrealpath-no-force-lowercase-nor-backslash.patch
++	gcc/gcc-4.9.1-enable-shared-gnat-implib.mingw.patch
++	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
++	gcc/gcc-5.2-fix-mingw-pch.patch
++	gcc/gcc-5-dwarf-regression.patch
++	gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
++	gcc/gcc-10-ktietz-libgomp.patch
++	gcc/gcc-libgomp-ftime64.patch
++	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
++	$( [[ $RUNTIME_MAJOR_VERSION -ge 10 ]] \
++		&& echo "gcc/0001-gcc-config-i386-mingw32.h-Ensure-lmsvcrt-precede-lke.patch" \
++	)
++)
++
++#
++
++PKG_CONFIGURE_FLAGS=(
++	--host=$HOST
++	--build=$BUILD
++	--target=$TARGET
++	#
++	--prefix=$MINGWPREFIX
++	--with-sysroot=$PREFIX
++	#--with-gxx-include-dir=$MINGWPREFIX/$TARGET/include/c++
++	#
++	$LINK_TYPE_GCC
++	#
++	$( [[ $USE_MULTILIB == yes ]] \
++		&& echo "--enable-targets=all --enable-multilib" \
++		|| echo "--disable-multilib" \
++	)
++	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
++		&& echo "--enable-languages=$ENABLE_LANGUAGES" \
++		|| echo "--enable-languages=$ENABLE_LANGUAGES,lto"
++	)
++	--enable-libstdcxx-time=yes
++	--enable-threads=$THREADS_MODEL
++	--enable-libgomp
++	--enable-libatomic
++	$( [[ "$MSVCRT_PHOBOS_OK" == yes && "$D_LANG_ENABLED" == yes ]] \
++		&& echo "--enable-libphobos"
++	)
++	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
++		&& echo "--disable-lto" \
++		|| echo "--enable-lto"
++	)
++	--enable-graphite
++	--enable-checking=release
++	--enable-fully-dynamic-string
++	--enable-version-specific-runtime-libs
++	--enable-libstdcxx-filesystem-ts=yes
++	$( [[ $EXCEPTIONS_MODEL == dwarf ]] \
++		&& echo "--disable-sjlj-exceptions --with-dwarf2" \
++	)
++	$( [[ $EXCEPTIONS_MODEL == sjlj ]] \
++		&& echo "--enable-sjlj-exceptions" \
++	)
++	#
++	--disable-libstdcxx-pch
++	--disable-libstdcxx-debug
++	$( [[ $BOOTSTRAPING == yes ]] \
++		&& echo "--enable-bootstrap" \
++		|| echo "--disable-bootstrap" \
++	)
++	--disable-rpath
++	--disable-win32-registry
++	--disable-nls
++	--disable-werror
++	--disable-symvers
++	#
++	--with-gnu-as
++	--with-gnu-ld
++	#
++	$PROCESSOR_OPTIMIZATION
++	$PROCESSOR_TUNE
++	#
++	--with-libiconv
++	--with-system-zlib
++	--with-{gmp,mpfr,mpc,isl}=$PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX
++	--with-pkgversion="\"$BUILD_ARCHITECTURE-$THREADS_MODEL-$EXCEPTIONS_MODEL${REV_STRING}, $MINGW_W64_PKG_STRING\""
++	--with-bugurl=$BUG_URL
++	#
++	CFLAGS="\"$COMMON_CFLAGS\""
++	CXXFLAGS="\"$COMMON_CXXFLAGS\""
++	CPPFLAGS="\"$COMMON_CPPFLAGS\""
++	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
++	LD_FOR_TARGET=$PREFIX/bin/ld.exe
++)
++
++#
++
++PKG_MAKE_FLAGS=(
++	-j$JOBS
++	all
++)
++
++#
++
++PKG_INSTALL_FLAGS=(
++	-j1
++	DESTDIR=$BASE_BUILD_DIR
++	$( [[ $STRIP_ON_INSTALL == yes ]] && echo install-strip || echo install )
++)
++
++# **************************************************************************
+diff --git a/scripts/gcc-11-branch.sh b/scripts/gcc-11-branch.sh
+index 80d1616..9850d5d 100644
+--- a/scripts/gcc-11-branch.sh
++++ b/scripts/gcc-11-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-12-branch.sh b/scripts/gcc-12-branch.sh
+index 37f7854..f8e1eb2 100644
+--- a/scripts/gcc-12-branch.sh
++++ b/scripts/gcc-12-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-4.6-branch.sh b/scripts/gcc-4.6-branch.sh
+index a337b13..20a576f 100644
+--- a/scripts/gcc-4.6-branch.sh
++++ b/scripts/gcc-4.6-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-4.7-branch.sh b/scripts/gcc-4.7-branch.sh
+index 3a4b23b..2e6eb4e 100644
+--- a/scripts/gcc-4.7-branch.sh
++++ b/scripts/gcc-4.7-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-4.8-branch.sh b/scripts/gcc-4.8-branch.sh
+index f405324..c4a36be 100644
+--- a/scripts/gcc-4.8-branch.sh
++++ b/scripts/gcc-4.8-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-4.9-branch.sh b/scripts/gcc-4.9-branch.sh
+index 3c3e253..e5f8adc 100644
+--- a/scripts/gcc-4.9-branch.sh
++++ b/scripts/gcc-4.9-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-5-branch.sh b/scripts/gcc-5-branch.sh
+index d056650..fbd7621 100644
+--- a/scripts/gcc-5-branch.sh
++++ b/scripts/gcc-5-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-6-branch.sh b/scripts/gcc-6-branch.sh
+index 963bef6..3cde4c1 100644
+--- a/scripts/gcc-6-branch.sh
++++ b/scripts/gcc-6-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-7-branch.sh b/scripts/gcc-7-branch.sh
+index 62b363b..99ae4fb 100644
+--- a/scripts/gcc-7-branch.sh
++++ b/scripts/gcc-7-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-8-branch.sh b/scripts/gcc-8-branch.sh
+index c68baa4..ec6f246 100644
+--- a/scripts/gcc-8-branch.sh
++++ b/scripts/gcc-8-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-9-branch.sh b/scripts/gcc-9-branch.sh
+index 8b92684..bff1dee 100644
+--- a/scripts/gcc-9-branch.sh
++++ b/scripts/gcc-9-branch.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}-branch
+ PKG_DIR_NAME=gcc-${PKG_VERSION}-branch
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:releases/gcc-$PKG_VERSION|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
+index 484559a..45c41e1 100644
+--- a/scripts/gcc-trunk.sh
++++ b/scripts/gcc-trunk.sh
+@@ -40,7 +40,7 @@ PKG_NAME=gcc-${PKG_VERSION}
+ PKG_DIR_NAME=gcc-${PKG_VERSION}
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://gcc.gnu.org/git/gcc.git|branch:master|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
++	"https://gcc.gnu.org/git/gcc.git|branch:master|repo:$PKG_TYPE|module:$PKG_DIR_NAME"
+ )
+ 
+ PKG_PRIORITY=main
+diff --git a/scripts/libffi.sh b/scripts/libffi.sh
+index 42905f8..24b9eaf 100644
+--- a/scripts/libffi.sh
++++ b/scripts/libffi.sh
+@@ -35,21 +35,19 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=3.2.1
++PKG_VERSION=3.4.2
+ PKG_NAME=libffi-${PKG_VERSION}
+ PKG_DIR_NAME=libffi-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"ftp://sourceware.org/pub/libffi/libffi-${PKG_VERSION}${PKG_TYPE}"
++	"https://github.com/libffi/libffi/releases/download/v${PKG_VERSION}/libffi-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+ 
+ #
+ 
+-PKG_PATCHES=(
+-	libffi/fix_return_size.patch
+-)
++PKG_PATCHES=()
+ 
+ #
+ 
+diff --git a/scripts/libiconv.sh b/scripts/libiconv.sh
+index 7d8e5d5..5bb2097 100644
+--- a/scripts/libiconv.sh
++++ b/scripts/libiconv.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.16
++PKG_VERSION=1.17
+ PKG_NAME=$PKG_ARCHITECTURE-libiconv-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=libiconv-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+@@ -48,7 +48,7 @@ PKG_PRIORITY=prereq
+ #
+ 
+ PKG_PATCHES=(
+-	libiconv/0001-compile-relocatable-in-gnulib.mingw.patch
++	#libiconv/0001-compile-relocatable-in-gnulib.mingw.patch
+ 	libiconv/0002-fix-cr-for-awk-in-configure.all.patch
+ 	libiconv/fix-pointer-buf.patch
+ )
+diff --git a/scripts/make_git.sh b/scripts/make_git.sh
+index 3653602..0ec0edd 100644
+--- a/scripts/make_git.sh
++++ b/scripts/make_git.sh
+@@ -39,7 +39,7 @@ PKG_NAME=make_git
+ PKG_DIR_NAME=make_git
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"http://git.savannah.gnu.org/cgit/make.git|repo:$PKG_TYPE|module:$PKG_NAME"
++	"https://git.savannah.gnu.org/cgit/make.git|repo:$PKG_TYPE|module:$PKG_NAME"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/make_git_bat.sh b/scripts/make_git_bat.sh
+index 918755f..b63a2ec 100644
+--- a/scripts/make_git_bat.sh
++++ b/scripts/make_git_bat.sh
+@@ -39,7 +39,7 @@ PKG_NAME=make_git
+ PKG_DIR_NAME=make_git
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"http://git.savannah.gnu.org/cgit/make.git|repo:$PKG_TYPE|module:$PKG_NAME"
++	"https://git.savannah.gnu.org/cgit/make.git|repo:$PKG_TYPE|module:$PKG_NAME"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
+index 2b289f6..3addd7f 100644
+--- a/scripts/mingw-w64-crt.sh
++++ b/scripts/mingw-w64-crt.sh
+@@ -87,7 +87,8 @@ PKG_CONFIGURE_FLAGS=(
+ #
+ 
+ PKG_MAKE_FLAGS=(
+-	-j$JOBS
++	#-j$JOBS
++	-j1
+ 	all
+ )
+ 
+diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
+index 384542b..933e575 100644
+--- a/scripts/mingw-w64-download.sh
++++ b/scripts/mingw-w64-download.sh
+@@ -41,13 +41,13 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
+ 	MINGW_PKG_DIR_VERSION_SUFFIX="-${RUNTIME_VERSION}"
+ 	PKG_TYPE=.tar.bz2
+ 	PKG_URLS=(
+-		"http://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-${RUNTIME_VERSION}${PKG_TYPE}"
++		"https://downloads.sourceforge.net/project/mingw-w64/mingw-w64/mingw-w64-release/mingw-w64-${RUNTIME_VERSION}${PKG_TYPE}"
+ 	)
+ } || {
+ 	MINGW_PKG_DIR_VERSION_SUFFIX=""
+ 	PKG_TYPE=git
+ 	PKG_URLS=(
+-		"git://git.code.sf.net/p/mingw-w64/mingw-w64|branch:$RUNTIME_BRANCH|repo:$PKG_TYPE"
++		"https://git.code.sf.net/p/mingw-w64/mingw-w64|branch:$RUNTIME_BRANCH|repo:$PKG_TYPE"
+ 	)
+ }
+ 
+diff --git a/scripts/mingw-w64-libraries-pseh.sh b/scripts/mingw-w64-libraries-pseh.sh
+index 4449749..822a89e 100644
+--- a/scripts/mingw-w64-libraries-pseh.sh
++++ b/scripts/mingw-w64-libraries-pseh.sh
+@@ -40,7 +40,7 @@ PKG_DIR_NAME=pseh-${RUNTIME_VERSION}
+ PKG_DIR_NAME=mingw-w64/mingw-w64-libraries/pseh
+ PKG_TYPE=git
+ PKG_URLS=(
+-	"git://git.code.sf.net/p/mingw-w64/mingw-w64|branch:$RUNTIME_BRANCH|repo:$PKG_TYPE"
++	"https://git.code.sf.net/p/mingw-w64/mingw-w64|branch:$RUNTIME_BRANCH|repo:$PKG_TYPE"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/openssl.sh b/scripts/openssl.sh
+index 2464b9c..4d3a8f1 100644
+--- a/scripts/openssl.sh
++++ b/scripts/openssl.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.1.1k
++PKG_VERSION=1.1.1o
+ PKG_NAME=openssl-${PKG_VERSION}
+ PKG_DIR_NAME=openssl-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+diff --git a/scripts/ppl.sh b/scripts/ppl.sh
+index b400a8b..5d89a6a 100644
+--- a/scripts/ppl.sh
++++ b/scripts/ppl.sh
+@@ -40,7 +40,7 @@ PKG_NAME=$BUILD_ARCHITECTURE-ppl-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=ppl-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"http://bugseng.com/products/ppl/download/ftp/releases/${PKG_VERSION}/ppl-${PKG_VERSION}${PKG_TYPE}"
++	"https://bugseng.com/products/ppl/download/ftp/releases/${PKG_VERSION}/ppl-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=prereq
+diff --git a/scripts/python-2.sh b/scripts/python-2.sh
+index 6c90d5c..4e88edb 100644
+--- a/scripts/python-2.sh
++++ b/scripts/python-2.sh
+@@ -40,7 +40,7 @@ PKG_NAME=Python-${PKG_VERSION}
+ PKG_DIR_NAME=Python-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"http://www.python.org/ftp/python/${PKG_VERSION}/Python-${PKG_VERSION}${PKG_TYPE}"
++	"https://www.python.org/ftp/python/${PKG_VERSION}/Python-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/python-3.sh b/scripts/python-3.sh
+index 3d93bc9..4115c6a 100644
+--- a/scripts/python-3.sh
++++ b/scripts/python-3.sh
+@@ -101,10 +101,11 @@ PKG_CONFIGURE_FLAGS=(
+ 	# --with-tzpath=$LIBS_DIR/share/zoneinfo
+ 	--enable-optimizations
+ 	#
+-	LIBFFI_INCLUDEDIR="$LIBSW_DIR/lib/libffi-$LIBFFI_VERSION/include"
++	PKG_CONFIG_PATH="$PREREQ_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib/pkgconfig:$LIBS_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
+ 	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1\""
+ 	CPPFLAGS="\"$COMMON_CPPFLAGS $MY_CPPFLAGS\""
+ 	LDFLAGS="\"$COMMON_LDFLAGS -L$PREREQW_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib -L$LIBSW_DIR/lib\""
++	LIBS="\"-lffi -lole32 -loleaut32 -luuid\""
+ )
+ 
+ #
+diff --git a/scripts/readline.sh b/scripts/readline.sh
+index 6f7e561..f3a0fb1 100644
+--- a/scripts/readline.sh
++++ b/scripts/readline.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=8.1
++PKG_VERSION=8.1.2
+ PKG_NAME=readline-${PKG_VERSION}
+ PKG_DIR_NAME=readline-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+@@ -48,7 +48,7 @@ PKG_PRIORITY=extra
+ #
+ 
+ PKG_PATCHES=(
+-	readline/readline81-001.patch
++	#readline/readline81-001.patch
+ 	readline/Fixed-missing-POSIX_SIGNALS-check.patch
+ )
+ 
+diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
+index 9a5fda0..aa7f23d 100644
+--- a/scripts/sqlite.sh
++++ b/scripts/sqlite.sh
+@@ -35,12 +35,12 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=3350500
++PKG_VERSION=3380500
+ PKG_NAME=sqlite-${PKG_VERSION}
+ PKG_DIR_NAME=sqlite-autoconf-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"https://www.sqlite.org/2021/sqlite-autoconf-${PKG_VERSION}${PKG_TYPE}"
++	"https://www.sqlite.org/2022/sqlite-autoconf-${PKG_VERSION}${PKG_TYPE}"
+ )
+ PKG_PRIORITY=extra
+ 
+diff --git a/scripts/tcl.sh b/scripts/tcl.sh
+index 651dbfa..d20f9b4 100644
+--- a/scripts/tcl.sh
++++ b/scripts/tcl.sh
+@@ -35,13 +35,13 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=8.6.11
++PKG_VERSION=8.6.12
+ PKG_NAME=tcl${PKG_VERSION}
+ PKG_DIR_NAME=tcl${PKG_VERSION}
+ PKG_SUBDIR_NAME=win
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"http://prdownloads.sourceforge.net/tcl/tcl${PKG_VERSION}-src${PKG_TYPE}"
++	"https://prdownloads.sourceforge.net/tcl/tcl${PKG_VERSION}-src${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/tests.sh b/scripts/tests.sh
+index 7668844..3cddb8a 100644
+--- a/scripts/tests.sh
++++ b/scripts/tests.sh
+@@ -81,15 +81,15 @@ lasterror_test2_list=(
+ 	"lasterror_test2.cpp -o lasterror_test2.exe"
+ )
+ 
+-[[ $MSVCRT_VERSION == ucrt ]] && (
+-	time_test_list=(
+-		"time_test.c -lpthread -lucrt -o time_test.exe"
+-	)
+-) || (
++#[[ $MSVCRT_VERSION == ucrt ]] && (
++#	time_test_list=(
++#		"time_test.c -lpthread -lucrt -o time_test.exe"
++#	)
++#) || (
+ 	time_test_list=(
+ 		"time_test.c -lpthread -o time_test.exe"
+ 	)
+-)
++#)
+ 
+ [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 && `echo $BUILD_VERSION | cut -d. -f2` -le 6 ]] && (
+ 	sleep_test_list=(
+diff --git a/scripts/tk.sh b/scripts/tk.sh
+index 8d8896a..40eb3f4 100644
+--- a/scripts/tk.sh
++++ b/scripts/tk.sh
+@@ -35,13 +35,13 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=8.6.11
++PKG_VERSION=8.6.12
+ PKG_NAME=tk${PKG_VERSION}
+ PKG_DIR_NAME=tk${PKG_VERSION}
+ PKG_SUBDIR_NAME=win
+ PKG_TYPE=.tar.gz
+ PKG_URLS=(
+-	"http://prdownloads.sourceforge.net/tcl/tk${PKG_VERSION}-src${PKG_TYPE}"
++	"https://prdownloads.sourceforge.net/tcl/tk${PKG_VERSION}-src${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/winpthreads.sh b/scripts/winpthreads.sh
+index 441393f..c912608 100644
+--- a/scripts/winpthreads.sh
++++ b/scripts/winpthreads.sh
+@@ -61,10 +61,10 @@ PKG_CONFIGURE_FLAGS=(
+ 	--enable-shared
+ 	--enable-static
+ 	#
+-	$( [[ $MSVCRT_VERSION == ucrt ]] && \
+-		[[ $BOOTSTRAPING == no ]] && \
+-			[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
+-				echo "LIBS=\"-lucrtbase\"" )
++	#$( [[ $MSVCRT_VERSION == ucrt ]] && \
++	#	[[ $BOOTSTRAPING == no ]] && \
++	#		[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
++	#			echo "LIBS=\"-lucrtbase\"" )
+ 	CFLAGS="\"$COMMON_CFLAGS\""
+ 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
+ 	CPPFLAGS="\"$COMMON_CPPFLAGS\""
+diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
+index 9b50d15..92bb22a 100644
+--- a/scripts/xz-utils.sh
++++ b/scripts/xz-utils.sh
+@@ -40,7 +40,7 @@ PKG_NAME=xz-${PKG_VERSION}
+ PKG_DIR_NAME=xz-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"http://tukaani.org/xz/xz-${PKG_VERSION}${PKG_TYPE}"
++	"https://tukaani.org/xz/xz-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
+diff --git a/scripts/zlib.sh b/scripts/zlib.sh
+index a922b5e..ffdd8be 100644
+--- a/scripts/zlib.sh
++++ b/scripts/zlib.sh
+@@ -35,12 +35,12 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.2.11
++PKG_VERSION=1.2.12
+ PKG_NAME=$PKG_ARCHITECTURE-zlib-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=zlib-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"https://sourceforge.net/projects/libpng/files/zlib/${PKG_VERSION}/zlib-${PKG_VERSION}${PKG_TYPE}"
++	"https://zlib.net/zlib-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=prereq
