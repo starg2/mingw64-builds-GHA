@@ -79,7 +79,7 @@ jobs:
         working-directory: mingw-builds
   
       - name: Build
-        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=ucrt --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=ucrt --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
