@@ -12,12 +12,12 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     strategy:
+      fail-fast: false
       matrix:
         mode: ["gcc-12.1.0", "gcc-11.3.0", "gcc-10.3.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
         exceptions: ["dwarfseh", "sjlj"]
-        crt: ["msvcrt", "ucrt"]
         exclude:
           - mode: "gcc-10.3.0"
             arch: "i686"
@@ -63,39 +63,32 @@ jobs:
         shell: bash
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Checkout the current repo
+        uses: actions/checkout@v3
+        with:
+          path: mingw64-builds-GHA
 
       - name: Get build scripts
-        run: |
-          cd
-          git clone https://github.com/niXman/mingw-builds.git -b develop --depth 1
+        uses: actions/checkout@v3
+        with:
+          repository: niXman/mingw-builds
+          ref: 2f6a48e6299bba4ec4ed735f0ddbd98cc9bd7819
+          path: mingw-builds
 
       - name: Patch build scripts
-        run: |
-          cd ~/mingw-builds
-          git apply $GITHUB_WORKSPACE/build-patch/https.patch
-          git apply $GITHUB_WORKSPACE/build-patch/patch-isl.patch
-          git apply $GITHUB_WORKSPACE/build-patch/skip-time_test.patch
-
-      - name: Build Stage 1
-        if: ${{ matrix.crt == 'ucrt' }}
-        run: |
-          cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-multilib --no-bootstrap --no-extras --buildroot=$HOME/mingw-stage1 --logviewer-command=cat --wait-for-logviewer
-          rm -rf ~/mingw-builds/toolchains/mingw*
-          cp -r ~/mingw-stage1/${{ matrix.arch }}-*/mingw* ~/mingw-builds/toolchains/
-
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
+        working-directory: mingw-builds
+  
       - name: Build
-        run: |
-          cd ~/mingw-builds
-          ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --with-default-msvcrt=${{ matrix.crt }} --cflags="-Wno-format" --jobs=2 --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        working-directory: mingw-builds
 
       - name: Move artifacts
         run: |
-          mkdir /c/mingw64_artifacts
-          mv ~/mingw-${{ matrix.mode }}/archives/*.7z /c/mingw64_artifacts
+          mkdir artifacts
+          mv ~/mingw-${{ matrix.mode }}/archives/*.7z artifacts
 
       - uses: actions/upload-artifact@v2
         with:
-          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
-          path: C:/mingw64_artifacts/*.7z
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-msvcrt
+          path: $GITHUB_WORKSPACE/artifacts/*.7z
