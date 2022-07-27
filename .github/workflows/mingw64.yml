@@ -80,15 +80,10 @@ jobs:
         working-directory: mingw-builds
   
       - name: Build
-        run: ./build --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-multilib --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
         working-directory: mingw-builds
-
-      - name: Move artifacts
-        run: |
-          mkdir artifacts
-          mv ~/mingw-${{ matrix.mode }}/archives/*.7z artifacts
 
       - uses: actions/upload-artifact@v2
         with:
           name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-msvcrt
-          path: $GITHUB_WORKSPACE/artifacts/*.7z
+          path: D:/${{ matrix.mode }}/archives/*.7z
