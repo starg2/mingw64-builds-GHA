@@ -85,11 +85,7 @@ jobs:
 
       - name: Install toolchains (i686, UCRT stage 1)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
-        run: |
-          mkdir -p /d/toolchains
-          cd /d/toolchains
-          rm $GITHUB_WORKSPACE/toolchain-ucrt-stage1-i686/src-*.7z
-          7z x $GITHUB_WORKSPACE/toolchain-ucrt-stage1-i686/*.7z
+        run: 7z x toolchain-ucrt-stage1-i686/i686-*.7z -o/d/toolchains
 
       - name: Download toolchains (x86_64, UCRT stage 1)
         if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
@@ -101,11 +97,7 @@ jobs:
 
       - name: Install toolchains (x86_64, UCRT stage 1)
         if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
-        run: |
-          mkdir -p /d/toolchains
-          cd /d/toolchains
-          rm $GITHUB_WORKSPACE/toolchain-ucrt-stage1-x86_64/src-*.7z
-          7z x $GITHUB_WORKSPACE/toolchain-ucrt-stage1-x86_64/*.7z
+        run: 7z x toolchain-ucrt-stage1-x86_64/x86_64-*.7z -o/d/toolchains
 
       - name: Build
         run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=ucrt --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
