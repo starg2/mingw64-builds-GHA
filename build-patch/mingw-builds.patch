@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index b737676..8d51e68 100755
+index d00e38c..9ca05cd 100755
 --- a/build
 +++ b/build
-@@ -316,7 +316,7 @@ while [[ $# > 0 ]]; do
+@@ -317,7 +317,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
@@ -43,7 +43,7 @@ index 9e924c8..46e44ab 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 5306d07..81f1c01 100644
+index 46e5f33..2e15f63 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -200,171 +200,6 @@ index fd4b633..d8693bd 100644
  )
  
  #
-diff --git a/scripts/gcc-10.4.0.sh b/scripts/gcc-10.4.0.sh
-new file mode 100644
-index 0000000..3991e3b
---- /dev/null
-+++ b/scripts/gcc-10.4.0.sh
-@@ -0,0 +1,159 @@
-+
-+#
-+# The BSD 3-Clause License. http://www.opensource.org/licenses/BSD-3-Clause
-+#
-+# This file is part of MinGW-W64(mingw-builds: https://github.com/niXman/mingw-builds) project.
-+# Copyright (c) 2011-2021 by niXman (i dotty nixman doggy gmail dotty com)
-+# Copyright (c) 2012-2015 by Alexpux (alexpux doggy gmail dotty com)
-+# All rights reserved.
-+#
-+# Project: MinGW-W64 ( http://sourceforge.net/projects/mingw-w64/ )
-+#
-+# Redistribution and use in source and binary forms, with or without
-+# modification, are permitted provided that the following conditions are met:
-+# - Redistributions of source code must retain the above copyright
-+#     notice, this list of conditions and the following disclaimer.
-+# - Redistributions in binary form must reproduce the above copyright
-+#     notice, this list of conditions and the following disclaimer in
-+#     the documentation and/or other materials provided with the distribution.
-+# - Neither the name of the 'MinGW-W64' nor the names of its contributors may
-+#     be used to endorse or promote products derived from this software
-+#     without specific prior written permission.
-+#
-+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-+# A PARTICULAR PURPOSE ARE DISCLAIMED.
-+# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY
-+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
-+# USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+#
-+
-+# **************************************************************************
-+
-+PKG_VERSION=10.4.0
-+PKG_NAME=gcc-${PKG_VERSION}
-+PKG_DIR_NAME=gcc-${PKG_VERSION}
-+PKG_TYPE=.tar.xz
-+PKG_URLS=(
-+	"https://ftp.gnu.org/gnu/gcc/gcc-${PKG_VERSION}/gcc-${PKG_VERSION}${PKG_TYPE}"
-+)
-+
-+PKG_PRIORITY=main
-+
-+#
-+
-+PKG_PATCHES=(
-+	gcc/gcc-4.7-stdthreads.patch
-+	gcc/gcc-5.1-iconv.patch
-+	gcc/gcc-4.8-libstdc++export.patch
-+	gcc/gcc-4.8.2-fix-for-windows-not-minding-non-existant-parent-dirs.patch
-+	gcc/gcc-4.8.2-windows-lrealpath-no-force-lowercase-nor-backslash.patch
-+	gcc/gcc-4.9.1-enable-shared-gnat-implib.mingw.patch
-+	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
-+	gcc/gcc-5.2-fix-mingw-pch.patch
-+	gcc/gcc-5-dwarf-regression.patch
-+	gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
-+	gcc/gcc-10-ktietz-libgomp.patch
-+	gcc/gcc-libgomp-ftime64.patch
-+	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 10 ]] \
-+		&& echo "gcc/0001-gcc-config-i386-mingw32.h-Ensure-lmsvcrt-precede-lke.patch" \
-+	)
-+)
-+
-+#
-+
-+PKG_CONFIGURE_FLAGS=(
-+	--host=$HOST
-+	--build=$BUILD
-+	--target=$TARGET
-+	#
-+	--prefix=$MINGWPREFIX
-+	--with-sysroot=$PREFIX
-+	#--with-gxx-include-dir=$MINGWPREFIX/$TARGET/include/c++
-+	#
-+	$LINK_TYPE_GCC
-+	#
-+	$( [[ $USE_MULTILIB == yes ]] \
-+		&& echo "--enable-targets=all --enable-multilib" \
-+		|| echo "--disable-multilib" \
-+	)
-+	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
-+		&& echo "--enable-languages=$ENABLE_LANGUAGES" \
-+		|| echo "--enable-languages=$ENABLE_LANGUAGES,lto"
-+	)
-+	--enable-libstdcxx-time=yes
-+	--enable-threads=$THREADS_MODEL
-+	--enable-libgomp
-+	--enable-libatomic
-+	$( [[ "$MSVCRT_PHOBOS_OK" == yes && "$D_LANG_ENABLED" == yes ]] \
-+		&& echo "--enable-libphobos"
-+	)
-+	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
-+		&& echo "--disable-lto" \
-+		|| echo "--enable-lto"
-+	)
-+	--enable-graphite
-+	--enable-checking=release
-+	--enable-fully-dynamic-string
-+	--enable-version-specific-runtime-libs
-+	--enable-libstdcxx-filesystem-ts=yes
-+	$( [[ $EXCEPTIONS_MODEL == dwarf ]] \
-+		&& echo "--disable-sjlj-exceptions --with-dwarf2" \
-+	)
-+	$( [[ $EXCEPTIONS_MODEL == sjlj ]] \
-+		&& echo "--enable-sjlj-exceptions" \
-+	)
-+	#
-+	--disable-libstdcxx-pch
-+	--disable-libstdcxx-debug
-+	$( [[ $BOOTSTRAPING == yes ]] \
-+		&& echo "--enable-bootstrap" \
-+		|| echo "--disable-bootstrap" \
-+	)
-+	--disable-rpath
-+	--disable-win32-registry
-+	--disable-nls
-+	--disable-werror
-+	--disable-symvers
-+	#
-+	--with-gnu-as
-+	--with-gnu-ld
-+	#
-+	$PROCESSOR_OPTIMIZATION
-+	$PROCESSOR_TUNE
-+	#
-+	--with-libiconv
-+	--with-system-zlib
-+	--with-{gmp,mpfr,mpc,isl}=$PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX
-+	--with-pkgversion="\"$BUILD_ARCHITECTURE-$THREADS_MODEL-$EXCEPTIONS_MODEL${REV_STRING}, $MINGW_W64_PKG_STRING\""
-+	--with-bugurl=$BUG_URL
-+	#
-+	CFLAGS="\"$COMMON_CFLAGS\""
-+	CXXFLAGS="\"$COMMON_CXXFLAGS\""
-+	CPPFLAGS="\"$COMMON_CPPFLAGS\""
-+	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
-+	LD_FOR_TARGET=$PREFIX/bin/ld.exe
-+)
-+
-+#
-+
-+PKG_MAKE_FLAGS=(
-+	-j$JOBS
-+	all
-+)
-+
-+#
-+
-+PKG_INSTALL_FLAGS=(
-+	-j1
-+	DESTDIR=$BASE_BUILD_DIR
-+	$( [[ $STRIP_ON_INSTALL == yes ]] && echo install-strip || echo install )
-+)
-+
-+# **************************************************************************
 diff --git a/scripts/gcc-11-branch.sh b/scripts/gcc-11-branch.sh
 index 80d1616..9850d5d 100644
 --- a/scripts/gcc-11-branch.sh
@@ -809,21 +644,23 @@ index 8d8896a..40eb3f4 100644
  
  PKG_PRIORITY=extra
 diff --git a/scripts/winpthreads.sh b/scripts/winpthreads.sh
-index 441393f..c912608 100644
+index baf7e28..65fff85 100644
 --- a/scripts/winpthreads.sh
 +++ b/scripts/winpthreads.sh
-@@ -61,10 +61,10 @@ PKG_CONFIGURE_FLAGS=(
- 	--enable-shared
- 	--enable-static
- 	#
+@@ -67,11 +67,11 @@ PKG_CONFIGURE_FLAGS=(
+     # mingw-builds) with a first/initial bootstrap build of a toolchain with ucrt,
+     # this linkage isn't needed then either. so assume the first ucrt mingw-build
+     # toolchain would be built with a "--rev=0" arg.
 -	$( [[ $MSVCRT_VERSION == ucrt ]] && \
 -		[[ $BOOTSTRAPING == no ]] && \
 -			[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
--				echo "LIBS=\"-lucrtbase\"" )
+-                [[ $REV_NUM -eq 0 ]] && \
+-                    echo "LIBS=\"-lucrtbase\"" )
 +	#$( [[ $MSVCRT_VERSION == ucrt ]] && \
 +	#	[[ $BOOTSTRAPING == no ]] && \
 +	#		[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
-+	#			echo "LIBS=\"-lucrtbase\"" )
++    #            [[ $REV_NUM -eq 0 ]] && \
++    #                echo "LIBS=\"-lucrtbase\"" )
  	CFLAGS="\"$COMMON_CFLAGS\""
  	CXXFLAGS="\"$COMMON_CXXFLAGS\""
  	CPPFLAGS="\"$COMMON_CPPFLAGS\""
