@@ -80,7 +80,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: ucrt-stage1.yml
-          name: ${{ matrix.mode }}_i686-posix-${{ matrix.exceptions }}-ucrt-stage1
+          name: gcc-11.3.0_i686-posix-${{ matrix.exceptions }}-ucrt-stage1
           path: toolchain-ucrt-stage1-i686
 
       - name: Install toolchains (i686, UCRT stage 1)
@@ -92,7 +92,7 @@ jobs:
         uses: dawidd6/action-download-artifact@v2
         with:
           workflow: ucrt-stage1.yml
-          name: ${{ matrix.mode }}_x86_64-posix-${{ matrix.exceptions }}-ucrt-stage1
+          name: gcc-11.3.0_x86_64-posix-${{ matrix.exceptions }}-ucrt-stage1
           path: toolchain-ucrt-stage1-x86_64
 
       - name: Install toolchains (x86_64, UCRT stage 1)
