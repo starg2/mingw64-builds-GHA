@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index d00e38c..9ca05cd 100755
+index 40cb7ac..e3c6269 100755
 --- a/build
 +++ b/build
-@@ -317,7 +317,7 @@ while [[ $# > 0 ]]; do
+@@ -318,7 +318,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
@@ -385,28 +385,6 @@ index 42905f8..24b9eaf 100644
  
  #
  
-diff --git a/scripts/libiconv.sh b/scripts/libiconv.sh
-index 7d8e5d5..5bb2097 100644
---- a/scripts/libiconv.sh
-+++ b/scripts/libiconv.sh
-@@ -35,7 +35,7 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=1.16
-+PKG_VERSION=1.17
- PKG_NAME=$PKG_ARCHITECTURE-libiconv-$LINK_TYPE_SUFFIX
- PKG_DIR_NAME=libiconv-${PKG_VERSION}
- PKG_TYPE=.tar.gz
-@@ -48,7 +48,7 @@ PKG_PRIORITY=prereq
- #
- 
- PKG_PATCHES=(
--	libiconv/0001-compile-relocatable-in-gnulib.mingw.patch
-+	#libiconv/0001-compile-relocatable-in-gnulib.mingw.patch
- 	libiconv/0002-fix-cr-for-awk-in-configure.all.patch
- 	libiconv/fix-pointer-buf.patch
- )
 diff --git a/scripts/make_git.sh b/scripts/make_git.sh
 index 3653602..0ec0edd 100644
 --- a/scripts/make_git.sh
@@ -434,10 +412,10 @@ index 918755f..b63a2ec 100644
  
  PKG_PRIORITY=extra
 diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
-index 2b289f6..3addd7f 100644
+index 4a8d6ea..08871b0 100644
 --- a/scripts/mingw-w64-crt.sh
 +++ b/scripts/mingw-w64-crt.sh
-@@ -87,7 +87,8 @@ PKG_CONFIGURE_FLAGS=(
+@@ -94,7 +94,8 @@ PKG_CONFIGURE_FLAGS=(
  #
  
  PKG_MAKE_FLAGS=(
@@ -677,22 +655,3 @@ index 9b50d15..92bb22a 100644
  )
  
  PKG_PRIORITY=extra
-diff --git a/scripts/zlib.sh b/scripts/zlib.sh
-index a922b5e..ffdd8be 100644
---- a/scripts/zlib.sh
-+++ b/scripts/zlib.sh
-@@ -35,12 +35,12 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=1.2.11
-+PKG_VERSION=1.2.12
- PKG_NAME=$PKG_ARCHITECTURE-zlib-${PKG_VERSION}-$LINK_TYPE_SUFFIX
- PKG_DIR_NAME=zlib-${PKG_VERSION}
- PKG_TYPE=.tar.xz
- PKG_URLS=(
--	"https://sourceforge.net/projects/libpng/files/zlib/${PKG_VERSION}/zlib-${PKG_VERSION}${PKG_TYPE}"
-+	"https://zlib.net/zlib-${PKG_VERSION}${PKG_TYPE}"
- )
- 
- PKG_PRIORITY=prereq
