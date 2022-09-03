@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: ["gcc-12.2.0", "gcc-11.3.0", "gcc-10.4.0"]
+        mode: ["gcc-12.2.0"]
         arch: ["i686", "x86_64"]
         threading: ["posix", "win32"]
         exceptions: ["dwarfseh", "sjlj"]
