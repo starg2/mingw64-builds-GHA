@@ -498,9 +498,27 @@ index 6c90d5c..4e88edb 100644
  
  PKG_PRIORITY=extra
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 3d93bc9..4115c6a 100644
+index 3d93bc9..b313958 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=3.9.10
++PKG_VERSION=3.10.5
+ PKG_NAME=Python-${PKG_VERSION}
+ PKG_DIR_NAME=Python-${PKG_VERSION}
+ PKG_TYPE=git
+@@ -48,7 +48,7 @@ PKG_PRIORITY=extra
+ #
+ 
+ PKG_EXECUTE_AFTER_UNCOMPRESS=(
+-	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
++	"git reset --hard 2ff76a3ae3d1416c3564d5a9344009843ce3ddc9" # Reset to this commit hash for reproducible builds
+ )
+ 
+ #
 @@ -101,10 +101,11 @@ PKG_CONFIGURE_FLAGS=(
  	# --with-tzpath=$LIBS_DIR/share/zoneinfo
  	--enable-optimizations
