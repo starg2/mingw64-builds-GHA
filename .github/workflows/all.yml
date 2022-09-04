@@ -1,0 +1,217 @@
+# This is a basic workflow to help you get started with Actions
+
+name: All
+
+# Controls when the workflow will run
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # Builds the initial, intermediate toolchains
+  build-stage1:
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: ["gcc-12.2.0"]
+        arch: ["i686", "x86_64"]
+        threading: ["posix", "win32", "mcf"]
+        exceptions: ["dwarf", "seh", "sjlj"]
+        crt: ["msvcrt", "ucrt"]
+        exclude:
+          - arch: "i686"
+            exceptions: "seh"
+          - arch: "x86_64"
+            exceptions: "dwarf"
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          update: true
+          install: >-
+            lndir
+            git
+            subversion
+            tar
+            zip
+            p7zip
+            make
+            patch
+            automake-wrapper
+            autoconf
+            libtool
+            flex
+            bison
+            gettext
+            gettext-devel
+            wget
+            sshpass
+            texinfo
+            autogen
+            dejagnu
+            pkgconf
+
+      - name: Change autocrlf
+        run: git config --global core.autocrlf input
+        shell: bash
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout the current repo
+        uses: actions/checkout@v3
+        with:
+          path: mingw64-builds-GHA
+
+      - name: Get build scripts
+        uses: actions/checkout@v3
+        with:
+          repository: niXman/mingw-builds
+          ref: b6f3e5f5accb2d57c48016e23d9aebb0817512ee
+          path: mingw-builds
+
+      - name: Patch build scripts (mingw-builds.patch)
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
+        working-directory: mingw-builds
+
+      - name: Patch build scripts (patch-isl.patch)
+        if: ${{ matrix.crt == "ucrt" }}
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/patch-isl.patch
+        working-directory: mingw-builds
+
+      - name: Patch build scripts (skip-time_test.patch)
+        if: ${{ matrix.crt == "ucrt" }}
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/skip-time_test.patch
+        working-directory: mingw-builds
+
+      - name: Patch build scripts (mcf.patch)
+        if: ${{ matrix.threading == "mcf" }}
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
+        working-directory: mingw-builds
+
+      - name: Build
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        working-directory: mingw-builds
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
+          path: D:/${{ matrix.mode }}/archives/*.7z
+
+  # Bootstrap the complete toolchains
+  build:
+    needs: build-stage1
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: ["gcc-12.2.0"]
+        arch: ["i686", "x86_64"]
+        threading: ["posix", "win32", "mcf"]
+        exceptions: ["dwarf", "seh", "sjlj"]
+        crt: ["msvcrt", "ucrt"]
+        exclude:
+          - arch: "i686"
+            exceptions: "seh"
+          - arch: "x86_64"
+            exceptions: "dwarf"
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    # The type of runner that the job will run on
+    runs-on: windows-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MSYS
+          update: true
+          install: >-
+            lndir
+            git
+            subversion
+            tar
+            zip
+            p7zip
+            make
+            patch
+            automake-wrapper
+            autoconf
+            libtool
+            flex
+            bison
+            gettext
+            gettext-devel
+            wget
+            sshpass
+            texinfo
+            autogen
+            dejagnu
+            pkgconf
+
+      - name: Change autocrlf
+        run: git config --global core.autocrlf input
+        shell: bash
+
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout the current repo
+        uses: actions/checkout@v3
+        with:
+          path: mingw64-builds-GHA
+
+      - name: Get build scripts
+        uses: actions/checkout@v3
+        with:
+          repository: niXman/mingw-builds
+          ref: b6f3e5f5accb2d57c48016e23d9aebb0817512ee
+          path: mingw-builds
+
+      - name: Patch build scripts (mingw-builds.patch)
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
+        working-directory: mingw-builds
+
+      - name: Patch build scripts (mcf.patch)
+        if: ${{ matrix.threading == "mcf" }}
+        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
+        working-directory: mingw-builds
+
+      - name: Download toolchain (i686)
+        if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.mode }}_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
+          path: toolchain-stage1-i686
+
+      - name: Extract toolchain (i686)
+        if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
+        run: 7z x toolchain-stage1-i686/i686-*.7z -o/d/toolchains
+
+      - name: Download toolchain (x86_64)
+        if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.mode }}_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
+          path: toolchain-stage1-x86_64
+
+      - name: Extract toolchain (x86_64)
+        if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
+        run: 7z x toolchain-stage1-x86_64/x86_64-*.7z -o/d/toolchains
+
+      - name: Build
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        working-directory: mingw-builds
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
+          path: D:/${{ matrix.mode }}/archives/*.7z
