@@ -51,6 +51,7 @@ jobs:
             patch
             automake-wrapper
             autoconf
+            autoconf-archive
             libtool
             flex
             bison
@@ -151,6 +152,7 @@ jobs:
             patch
             automake-wrapper
             autoconf
+            autoconf-archive
             libtool
             flex
             bison
