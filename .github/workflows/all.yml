@@ -14,16 +14,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: ["gcc-12.2.0"]
-        arch: ["i686", "x86_64"]
-        threading: ["posix", "win32", "mcf"]
-        exceptions: ["dwarf", "seh", "sjlj"]
-        crt: ["msvcrt", "ucrt"]
+        mode: ['gcc-12.2.0']
+        arch: ['i686', 'x86_64']
+        threading: ['posix', 'win32', 'mcf']
+        exceptions: ['dwarf', 'seh', 'sjlj']
+        crt: ['msvcrt', 'ucrt']
         exclude:
-          - arch: "i686"
-            exceptions: "seh"
-          - arch: "x86_64"
-            exceptions: "dwarf"
+          - arch: 'i686'
+            exceptions: 'seh'
+          - arch: 'x86_64'
+            exceptions: 'dwarf'
 
     defaults:
       run:
@@ -83,22 +83,22 @@ jobs:
         working-directory: mingw-builds
 
       - name: Patch build scripts (patch-isl.patch)
-        if: ${{ matrix.crt == "ucrt" }}
+        if: ${{ matrix.crt == 'ucrt' }}
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/patch-isl.patch
         working-directory: mingw-builds
 
       - name: Patch build scripts (skip-time_test.patch)
-        if: ${{ matrix.crt == "ucrt" }}
+        if: ${{ matrix.crt == 'ucrt' }}
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/skip-time_test.patch
         working-directory: mingw-builds
 
       - name: Patch build scripts (mcf.patch)
-        if: ${{ matrix.threading == "mcf" }}
+        if: ${{ matrix.threading == 'mcf' }}
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
         working-directory: mingw-builds
 
       - name: Build
-        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --no-bootstrap --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
@@ -112,16 +112,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: ["gcc-12.2.0"]
-        arch: ["i686", "x86_64"]
-        threading: ["posix", "win32", "mcf"]
-        exceptions: ["dwarf", "seh", "sjlj"]
-        crt: ["msvcrt", "ucrt"]
+        mode: ['gcc-12.2.0']
+        arch: ['i686', 'x86_64']
+        threading: ['posix', 'win32', 'mcf']
+        exceptions: ['dwarf', 'seh', 'sjlj']
+        crt: ['msvcrt', 'ucrt']
         exclude:
-          - arch: "i686"
-            exceptions: "seh"
-          - arch: "x86_64"
-            exceptions: "dwarf"
+          - arch: 'i686'
+            exceptions: 'seh'
+          - arch: 'x86_64'
+            exceptions: 'dwarf'
 
     defaults:
       run:
@@ -181,7 +181,7 @@ jobs:
         working-directory: mingw-builds
 
       - name: Patch build scripts (mcf.patch)
-        if: ${{ matrix.threading == "mcf" }}
+        if: ${{ matrix.threading == 'mcf' }}
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
         working-directory: mingw-builds
 
@@ -208,7 +208,7 @@ jobs:
         run: 7z x toolchain-stage1-x86_64/x86_64-*.7z -o/d/toolchains
 
       - name: Build
-        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags="-Wno-format" --jobs=2 --no-bootstrap --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --buildroot=/d/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --no-bootstrap --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
