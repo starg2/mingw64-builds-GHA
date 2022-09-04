@@ -55,10 +55,10 @@ index 46e5f33..2e15f63 100644
  				_result=$?
  			}
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
-index 60fe243..d692975 100644
+index a243eaa..bc6ba89 100644
 --- a/scripts/bzip2.sh
 +++ b/scripts/bzip2.sh
-@@ -35,14 +35,14 @@
+@@ -35,7 +35,7 @@
  
  # **************************************************************************
  
@@ -67,24 +67,14 @@ index 60fe243..d692975 100644
  PKG_NAME=bzip2-${PKG_VERSION}
  PKG_DIR_NAME=bzip2-${PKG_VERSION}
  PKG_TYPE=.tar.gz
- PKG_URLS=(
- 	# Original website is gone.
- 	#"http://www.bzip.org/${PKG_VERSION}/${PKG_DIR_NAME}${PKG_TYPE}"
--	"https://sources.archlinux.org/other/packages/bzip2/${PKG_DIR_NAME}${PKG_TYPE}"
-+	"https://sourceware.org/pub/bzip2/${PKG_DIR_NAME}${PKG_TYPE}"
- )
- 
- PKG_PRIORITY=extra
-@@ -50,10 +50,10 @@ PKG_PRIORITY=extra
+@@ -50,10 +50,8 @@ PKG_PRIORITY=extra
  #
  
  PKG_PATCHES=(
 -	bzip2/bzip2-1.0.4-bzip2recover.patch
-+	#bzip2/bzip2-1.0.4-bzip2recover.patch
  	bzip2/bzip2-1.0.6-autoconfiscated.patch
  	bzip2/bzip2-use-cdecl-calling-convention.patch
 -	bzip2/bzip2-1.0.5-slash.patch
-+	#bzip2/bzip2-1.0.5-slash.patch
  )
  
  #

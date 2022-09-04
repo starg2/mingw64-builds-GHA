@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index 40cb7ac..ac13c33 100755
+index 40cb7ac..f9ff6e3 100755
 --- a/build
 +++ b/build
 @@ -75,7 +75,7 @@ readonly RUN_ARGS="$@"
@@ -24,6 +24,17 @@ index 40cb7ac..ac13c33 100755
  				;;
  			esac
  		;;
+@@ -648,6 +648,10 @@ case $BUILD_ARCHITECTURE in
+ 	;;
+ esac
+ 
++[[ $THREADS_MODEL == mcf ]] && {
++	export PATH=$PREREQ_DIR/$BUILD_ARCHITECTURE-mcfgthread/bin:$PATH
++}
++
+ [[ $LINK_TYPE_SUFFIX == shared ]] && {
+ 	export PATH=$PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX/bin:$PREREQ_DIR/$BUILD_ARCHITECTURE-libiconv-$LINK_TYPE_SUFFIX/bin:$PREREQ_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/bin:$PATH
+ }
 diff --git a/library/subtargets.sh b/library/subtargets.sh
 index 598feda..f74ccb0 100644
 --- a/library/subtargets.sh
