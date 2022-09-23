@@ -79,7 +79,7 @@ index a243eaa..bc6ba89 100644
  
  #
 diff --git a/scripts/expat.sh b/scripts/expat.sh
-index ed54957..14f6990 100644
+index ed54957..8610139 100644
 --- a/scripts/expat.sh
 +++ b/scripts/expat.sh
 @@ -35,7 +35,7 @@
@@ -87,7 +87,7 @@ index ed54957..14f6990 100644
  # **************************************************************************
  
 -PKG_VERSION=2.4.7
-+PKG_VERSION=2.4.8
++PKG_VERSION=2.4.9
  PKG_NAME=expat-${PKG_VERSION}
  PKG_DIR_NAME=expat-${PKG_VERSION}
  PKG_TYPE=.tar.xz
