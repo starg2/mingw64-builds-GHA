@@ -214,7 +214,7 @@ jobs:
         run: 7z x toolchain-stage1-x86_64/x86_64-*.7z -o/d/toolchains
 
       - name: Build
-        run: ./build --buildroot=/c/build/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: ./build --buildroot=/c/build/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --no-bootstrap --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
