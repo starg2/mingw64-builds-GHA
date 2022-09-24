@@ -101,7 +101,25 @@ jobs:
         working-directory: mingw-builds
 
       - name: Build
-        run: ./build --buildroot=/c/build/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --no-bootstrap --no-extras --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: >-
+          ./build
+          --buildroot=/c/build/${{ matrix.mode }}
+          --mode=${{ matrix.mode }}
+          --arch=${{ matrix.arch }}
+          --exceptions=${{ matrix.exceptions }}
+          --rt-version=trunk
+          --threads=${{ matrix.threading }}
+          --with-default-msvcrt=${{ matrix.crt }}
+          --enable-languages=c,c++
+          --static-gcc
+          --cflags='-Wno-format'
+          --jobs=2
+          --no-bootstrap
+          --no-extras
+          --bin-compress
+          --src-compress
+          --logviewer-command=cat
+          --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
@@ -109,7 +127,7 @@ jobs:
           name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
           path: C:/build/${{ matrix.mode }}/archives/*.7z
 
-  # Bootstrap the complete toolchains
+  # Build the complete toolchains
   build:
     needs: build-stage1
     strategy:
@@ -214,7 +232,25 @@ jobs:
         run: 7z x toolchain-stage1-x86_64/x86_64-*.7z -o/d/toolchains
 
       - name: Build
-        run: ./build --buildroot=/c/build/${{ matrix.mode }} --mode=${{ matrix.mode }} --arch=${{ matrix.arch }} --exceptions=${{ matrix.exceptions }} --rt-version=trunk --threads=${{ matrix.threading }} --with-default-msvcrt=${{ matrix.crt }} --provided-toolchain=/d/toolchains --enable-languages=c,c++ --static-gcc --cflags='-Wno-format' --jobs=2 --no-bootstrap --bin-compress --src-compress --logviewer-command=cat --wait-for-logviewer
+        run: >-
+          ./build
+          --buildroot=/c/build/${{ matrix.mode }}
+          --mode=${{ matrix.mode }}
+          --arch=${{ matrix.arch }}
+          --exceptions=${{ matrix.exceptions }}
+          --rt-version=trunk
+          --threads=${{ matrix.threading }}
+          --with-default-msvcrt=${{ matrix.crt }}
+          --provided-toolchain=/d/toolchains
+          --enable-languages=c,c++
+          --static-gcc
+          --cflags='-Wno-format'
+          --jobs=2
+          --no-bootstrap
+          --bin-compress
+          --src-compress
+          --logviewer-command=cat
+          --wait-for-logviewer
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v2
