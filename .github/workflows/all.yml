@@ -78,7 +78,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: niXman/mingw-builds
-          ref: 55959edf03beca19d1e3048497bb7e9cd7395afc
+          ref: 4ea64375ee4c898efa6325bb94dac3c4bdde4818
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
@@ -197,7 +197,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: niXman/mingw-builds
-          ref: 55959edf03beca19d1e3048497bb7e9cd7395afc
+          ref: 4ea64375ee4c898efa6325bb94dac3c4bdde4818
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
