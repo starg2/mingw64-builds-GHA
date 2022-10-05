@@ -78,33 +78,6 @@ index a243eaa..bc6ba89 100644
  )
  
  #
-diff --git a/scripts/expat.sh b/scripts/expat.sh
-index ed54957..8610139 100644
---- a/scripts/expat.sh
-+++ b/scripts/expat.sh
-@@ -35,7 +35,7 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=2.4.7
-+PKG_VERSION=2.4.9
- PKG_NAME=expat-${PKG_VERSION}
- PKG_DIR_NAME=expat-${PKG_VERSION}
- PKG_TYPE=.tar.xz
-diff --git a/scripts/gcc-10.3.0.sh b/scripts/gcc-10.3.0.sh
-index fd4b633..d8693bd 100644
---- a/scripts/gcc-10.3.0.sh
-+++ b/scripts/gcc-10.3.0.sh
-@@ -61,6 +61,9 @@ PKG_PATCHES=(
- 	gcc/gcc-10-ktietz-libgomp.patch
- 	gcc/gcc-libgomp-ftime64.patch
- 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 10 ]] \
-+		&& echo "gcc/0001-gcc-config-i386-mingw32.h-Ensure-lmsvcrt-precede-lke.patch" \
-+	)
- )
- 
- #
 diff --git a/scripts/libffi.sh b/scripts/libffi.sh
 index 5daff81..24b9eaf 100644
 --- a/scripts/libffi.sh
@@ -310,3 +283,16 @@ index baf7e28..65fff85 100644
  	CFLAGS="\"$COMMON_CFLAGS\""
  	CXXFLAGS="\"$COMMON_CXXFLAGS\""
  	CPPFLAGS="\"$COMMON_CPPFLAGS\""
+diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
+index 92bb22a..91e10d7 100644
+--- a/scripts/xz-utils.sh
++++ b/scripts/xz-utils.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=5.2.5
++PKG_VERSION=5.2.7
+ PKG_NAME=xz-${PKG_VERSION}
+ PKG_DIR_NAME=xz-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
