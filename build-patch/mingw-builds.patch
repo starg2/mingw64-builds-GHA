@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index 40cb7ac..b193920 100755
+index 7279f32..f06220b 100755
 --- a/build
 +++ b/build
-@@ -318,7 +318,7 @@ while [[ $# > 0 ]]; do
+@@ -319,7 +319,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
