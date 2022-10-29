@@ -111,7 +111,6 @@ jobs:
           --threads=${{ matrix.threading }}
           --with-default-msvcrt=${{ matrix.crt }}
           --enable-languages=c,c++
-          --static-gcc
           --cflags='-Wno-format'
           --jobs=2
           --no-bootstrap
@@ -243,7 +242,6 @@ jobs:
           --with-default-msvcrt=${{ matrix.crt }}
           --provided-toolchain=/d/toolchains
           --enable-languages=c,c++
-          --static-gcc
           --cflags='-Wno-format'
           --jobs=2
           --no-bootstrap
