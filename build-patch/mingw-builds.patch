@@ -54,82 +54,6 @@ index 46e5f33..2e15f63 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
-diff --git a/patches/binutils/0110-binutils-mingw-gnu-print.patch b/patches/binutils/0110-binutils-mingw-gnu-print.patch
-index 09bf646..91dcd7e 100644
---- a/patches/binutils/0110-binutils-mingw-gnu-print.patch
-+++ b/patches/binutils/0110-binutils-mingw-gnu-print.patch
-@@ -1,27 +1,3 @@
--diff -urN binutils-2.38.orig/bfd/bfd-in.h binutils-2.38/bfd/bfd-in.h
----- binutils-2.38.orig/bfd/bfd-in.h	2022-01-22 13:14:07.000000000 +0100
--+++ binutils-2.38/bfd/bfd-in.h	2022-04-01 16:18:40.062376800 +0200
--@@ -123,7 +123,7 @@
-- 
-- #if BFD_HOST_64BIT_LONG
-- #define BFD_VMA_FMT "l"
---#elif defined (__MSVCRT__)
--+#elif defined(__MSVCRT__) && !defined( __USE_MINGW_ANSI_STDIO)
-- #define BFD_VMA_FMT "I64"
-- #else
-- #define BFD_VMA_FMT "ll"
--diff -urN binutils-2.38.orig/bfd/bfd-in2.h binutils-2.38/bfd/bfd-in2.h
----- binutils-2.38.orig/bfd/bfd-in2.h	2022-01-22 13:14:07.000000000 +0100
--+++ binutils-2.38/bfd/bfd-in2.h	2022-04-01 16:19:30.593721500 +0200
--@@ -130,7 +130,7 @@
-- 
-- #if BFD_HOST_64BIT_LONG
-- #define BFD_VMA_FMT "l"
---#elif defined (__MSVCRT__)
--+#elif defined(__MSVCRT__) && !defined(__USE_MINGW_ANSI_STDIO)
-- #define BFD_VMA_FMT "I64"
-- #else
-- #define BFD_VMA_FMT "ll"
- diff -urN binutils-2.38.orig/binutils/dwarf.c binutils-2.38/binutils/dwarf.c
- --- binutils-2.38.orig/binutils/dwarf.c	2022-01-22 13:14:07.000000000 +0100
- +++ binutils-2.38/binutils/dwarf.c	2022-04-01 16:20:13.920951900 +0200
-@@ -34,30 +10,6 @@ diff -urN binutils-2.38.orig/binutils/dwarf.c binutils-2.38/binutils/dwarf.c
-  #  define DWARF_VMA_FMT		"ll"
-  #  define DWARF_VMA_FMT_LONG	"%16.16llx"
-  # else
--diff -urN binutils-2.38.orig/binutils/nm.c binutils-2.38/binutils/nm.c
----- binutils-2.38.orig/binutils/nm.c	2022-01-22 13:14:07.000000000 +0100
--+++ binutils-2.38/binutils/nm.c	2022-04-01 16:21:05.889862000 +0200
--@@ -1556,7 +1556,7 @@
-- #if BFD_HOST_64BIT_LONG
--       ;
-- #elif BFD_HOST_64BIT_LONG_LONG
---#ifndef __MSVCRT__
--+#if !defined(__MSVCRT__) || defined(__USE_MINGW_ANSI_STDIO)
--       length = "ll";
-- #else
--       length = "I64";
--diff -urN binutils-2.38.orig/binutils/prdbg.c binutils-2.38/binutils/prdbg.c
----- binutils-2.38.orig/binutils/prdbg.c	2022-01-22 13:14:07.000000000 +0100
--+++ binutils-2.38/binutils/prdbg.c	2022-04-01 16:21:51.875019800 +0200
--@@ -497,7 +497,7 @@
-- #if BFD_HOST_64BIT_LONG_LONG
--   else if (sizeof (vma) <= sizeof (unsigned long long))
--     {
---#ifndef __MSVCRT__
--+#if !defined(__MSVCRT__) || defined(__USE_MINGW_ANSI_STDIO)
--       if (hexp)
-- 	sprintf (buf, "0x%llx", (unsigned long long) vma);
--       else if (unsignedp)
- diff -urN binutils-2.38.orig/binutils/strings.c binutils-2.38/binutils/strings.c
- --- binutils-2.38.orig/binutils/strings.c	2022-01-22 13:14:07.000000000 +0100
- +++ binutils-2.38/binutils/strings.c	2022-04-01 16:23:19.687330400 +0200
-diff --git a/scripts/binutils.sh b/scripts/binutils.sh
-index 3a4b894..a5f3eab 100644
---- a/scripts/binutils.sh
-+++ b/scripts/binutils.sh
-@@ -35,7 +35,7 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=2.38
-+PKG_VERSION=2.39
- PKG_NAME=binutils-${PKG_VERSION}
- [[ $USE_MULTILIB == yes ]] && {
- 	PKG_NAME=$BUILD_ARCHITECTURE-$PKG_NAME-multi
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index a243eaa..bc6ba89 100644
 --- a/scripts/bzip2.sh
@@ -169,10 +93,34 @@ index f8e1eb2..7fd6d38 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index 2858386..af5a636 100644
+index 2858386..fd32906 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
-@@ -102,6 +102,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -81,7 +81,10 @@ PKG_CONFIGURE_FLAGS=(
+ 		&& echo "--enable-targets=all --enable-multilib" \
+ 		|| echo "--disable-multilib" \
+ 	)
+-	--enable-languages=$ENABLE_LANGUAGES,lto
++	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
++		&& echo "--enable-languages=$ENABLE_LANGUAGES" \
++		|| echo "--enable-languages=$ENABLE_LANGUAGES,lto"
++	)
+ 	--enable-libstdcxx-time=yes
+ 	--enable-threads=$THREADS_MODEL
+ 	--enable-libgomp
+@@ -89,7 +92,10 @@ PKG_CONFIGURE_FLAGS=(
+ 	$( [[ "$MSVCRT_PHOBOS_OK" == yes && "$D_LANG_ENABLED" == yes ]] \
+ 		&& echo "--enable-libphobos"
+ 	)
+-	--enable-lto
++	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
++		&& echo "--disable-lto" \
++		|| echo "--enable-lto"
++	)
+ 	--enable-graphite
+ 	--enable-checking=release
+ 	--enable-fully-dynamic-string
+@@ -102,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -183,10 +131,31 @@ index 2858386..af5a636 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index 45c41e1..ddf5715 100644
+index 45c41e1..510bd02 100644
 --- a/scripts/gcc-trunk.sh
 +++ b/scripts/gcc-trunk.sh
-@@ -106,6 +106,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -51,15 +51,17 @@ PKG_PATCHES=(
+ 	gcc/gcc-4.7-stdthreads.patch
+ 	gcc/gcc-5.1-iconv.patch
+ 	gcc/gcc-4.8-libstdc++export.patch
+-	gcc/gcc-4.8.2-fix-for-windows-not-minding-non-existant-parent-dirs.patch
++	gcc/gcc-12-fix-for-windows-not-minding-non-existant-parent-dirs.patch
+ 	gcc/gcc-4.8.2-windows-lrealpath-no-force-lowercase-nor-backslash.patch
+ 	gcc/gcc-4.9.1-enable-shared-gnat-implib.mingw.patch
+ 	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
+-	gcc/gcc-5.2-fix-mingw-pch.patch
++	gcc/gcc-12-fix-mingw-pch.patch
+ 	gcc/gcc-5-dwarf-regression.patch
+ 	gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
+-	gcc/gcc-10-ktietz-libgomp.patch
++	gcc/gcc-12-ktietz-libgomp.patch
+ 	gcc/gcc-libgomp-ftime64.patch
++	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
++	gcc/gcc-10-libgcc-ldflags.patch
+ )
+ 
+ #
+@@ -106,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -196,6 +165,14 @@ index 45c41e1..ddf5715 100644
  	--disable-libstdcxx-pch
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
+@@ -135,6 +140,7 @@ PKG_CONFIGURE_FLAGS=(
+ 	CPPFLAGS="\"$COMMON_CPPFLAGS\""
+ 	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
+ 	LD_FOR_TARGET=$PREFIX/bin/ld.exe
++	--with-boot-ldflags="\"$LDFLAGS -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc\""
+ )
+ 
+ #
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
 index 23a7eb4..6a7c6a7 100644
 --- a/scripts/gdb.sh
@@ -210,7 +187,7 @@ index 23a7eb4..6a7c6a7 100644
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
 diff --git a/scripts/libffi.sh b/scripts/libffi.sh
-index 5daff81..2cbfd12 100644
+index 5daff81..c4f9774 100644
 --- a/scripts/libffi.sh
 +++ b/scripts/libffi.sh
 @@ -35,21 +35,19 @@
@@ -218,7 +195,7 @@ index 5daff81..2cbfd12 100644
  # **************************************************************************
  
 -PKG_VERSION=3.2.1
-+PKG_VERSION=3.4.3
++PKG_VERSION=3.4.4
  PKG_NAME=libffi-${PKG_VERSION}
  PKG_DIR_NAME=libffi-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -238,22 +215,8 @@ index 5daff81..2cbfd12 100644
  
  #
  
-diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
-index 4a8d6ea..08871b0 100644
---- a/scripts/mingw-w64-crt.sh
-+++ b/scripts/mingw-w64-crt.sh
-@@ -94,7 +94,8 @@ PKG_CONFIGURE_FLAGS=(
- #
- 
- PKG_MAKE_FLAGS=(
--	-j$JOBS
-+	#-j$JOBS
-+	-j1
- 	all
- )
- 
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index 2464b9c..dab41e8 100644
+index 2464b9c..058b450 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -261,7 +224,7 @@ index 2464b9c..dab41e8 100644
  # **************************************************************************
  
 -PKG_VERSION=1.1.1k
-+PKG_VERSION=1.1.1q
++PKG_VERSION=1.1.1s
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz

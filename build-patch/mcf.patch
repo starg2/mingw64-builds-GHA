@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index f06220b..4103a58 100755
+index 4fe6868..858fb27 100755
 --- a/build
 +++ b/build
 @@ -76,7 +76,7 @@ readonly RUN_ARGS="$@"
@@ -10,8 +10,8 @@ index f06220b..4103a58 100755
 +	echo "                                 available: win32, posix, mcf"
  	echo "    --arch=<i686|x86_64>       - specifies the architecture"
  	echo "    --mode=<[clang|gcc|python]-version>  - specify building software with version"
- 	echo "    --with-testsuite           - run testsuite for packages if possible"
-@@ -371,10 +371,10 @@ while [[ $# > 0 ]]; do
+ 	echo "    --provided-toolchain=<path> - specifies the path with already existing local toolchain instead of download it"
+@@ -373,10 +373,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
  			case $THREADS_MODEL in
@@ -24,7 +24,7 @@ index f06220b..4103a58 100755
  				;;
  			esac
  		;;
-@@ -650,6 +650,10 @@ case $BUILD_ARCHITECTURE in
+@@ -652,6 +652,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  
@@ -2303,7 +2303,7 @@ index 7fd6d38..cf87024 100644
  
  #
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index af5a636..5e15355 100644
+index fd32906..44f8ddc 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
 @@ -57,11 +57,12 @@ PKG_PATCHES=(
@@ -2334,7 +2334,7 @@ index d2232ab..dea04cc 100644
  		binutils
 diff --git a/scripts/mcfgthread.sh b/scripts/mcfgthread.sh
 new file mode 100644
-index 0000000..37a9fbb
+index 0000000..11d2955
 --- /dev/null
 +++ b/scripts/mcfgthread.sh
 @@ -0,0 +1,94 @@
@@ -2375,7 +2375,7 @@ index 0000000..37a9fbb
 +
 +# **************************************************************************
 +
-+PKG_VERSION=1.2
++PKG_VERSION=1.3
 +PKG_NAME=$PKG_ARCHITECTURE-mcfgthread-${PKG_VERSION}
 +PKG_DIR_NAME=mcfgthread-${PKG_VERSION}
 +PKG_TYPE=git
@@ -2461,7 +2461,7 @@ index 721e21c..a96f0dd 100644
  
  PKG_CONFIGURE_FLAGS=(
 diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
-index 08871b0..d265044 100644
+index 4a8d6ea..56c8035 100644
 --- a/scripts/mingw-w64-crt.sh
 +++ b/scripts/mingw-w64-crt.sh
 @@ -39,9 +39,9 @@ PKG_NAME=mingw-w64-crt-${RUNTIME_VERSION}
