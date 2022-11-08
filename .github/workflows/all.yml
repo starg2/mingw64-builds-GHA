@@ -18,7 +18,7 @@ jobs:
         arch: ['i686', 'x86_64']
         threading: ['posix', 'win32', 'mcf']
         exceptions: ['dwarf', 'seh']
-        crt: ['msvcrt', 'ucrt']
+        crt: ['ucrt']
         exclude:
           - arch: 'i686'
             exceptions: 'seh'
@@ -134,7 +134,7 @@ jobs:
         arch: ['i686', 'x86_64']
         threading: ['posix', 'win32', 'mcf']
         exceptions: ['dwarf', 'seh']
-        crt: ['msvcrt', 'ucrt']
+        crt: ['ucrt']
         exclude:
           - arch: 'i686'
             exceptions: 'seh'
