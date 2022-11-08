@@ -240,7 +240,6 @@ jobs:
           --enable-languages=c,c++
           --cflags='-Wno-format'
           --jobs=2
-          --no-bootstrap
           --bin-compress
           --src-compress
           --logviewer-command=cat
