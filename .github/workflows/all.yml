@@ -9,137 +9,19 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # Builds the initial, intermediate toolchains
-  build-stage1:
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: ['gcc-12.2.0']
-        arch: ['i686', 'x86_64']
-        threading: ['posix', 'win32', 'mcf']
-        exceptions: ['dwarf', 'seh']
-        crt: ['ucrt']
-        exclude:
-          - arch: 'i686'
-            exceptions: 'seh'
-          - arch: 'x86_64'
-            exceptions: 'dwarf'
-
-    defaults:
-      run:
-        shell: msys2 {0}
-
-    # The type of runner that the job will run on
-    runs-on: windows-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: MSYS
-          update: true
-          install: >-
-            lndir
-            git
-            subversion
-            tar
-            zip
-            p7zip
-            make
-            patch
-            automake-wrapper
-            autoconf
-            autoconf-archive
-            libtool
-            flex
-            bison
-            gettext
-            gettext-devel
-            wget
-            sshpass
-            texinfo
-            autogen
-            dejagnu
-            pkgconf
-
-      - name: Change autocrlf
-        run: git config --global core.autocrlf input
-        shell: bash
-
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout the current repo
-        uses: actions/checkout@v3
-        with:
-          path: mingw64-builds-GHA
-
-      - name: Get build scripts
-        uses: actions/checkout@v3
-        with:
-          repository: niXman/mingw-builds
-          ref: 844030cc6db66d210186968697edcdd0b6c9c607
-          path: mingw-builds
-
-      - name: Patch build scripts (mingw-builds.patch)
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
-        working-directory: mingw-builds
-
-      - name: Patch build scripts (patch-isl.patch)
-        if: ${{ matrix.crt == 'ucrt' }}
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/patch-isl.patch
-        working-directory: mingw-builds
-
-      - name: Patch build scripts (skip-time_test.patch)
-        if: ${{ matrix.crt == 'ucrt' }}
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/skip-time_test.patch
-        working-directory: mingw-builds
-
-      - name: Patch build scripts (mcf.patch)
-        if: ${{ matrix.threading == 'mcf' }}
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
-        working-directory: mingw-builds
-
-      - name: Build
-        run: >-
-          ./build
-          --buildroot=/c/build/${{ matrix.mode }}
-          --mode=${{ matrix.mode }}
-          --arch=${{ matrix.arch }}
-          --exceptions=${{ matrix.exceptions }}
-          --rt-version=trunk
-          --threads=${{ matrix.threading }}
-          --with-default-msvcrt=${{ matrix.crt }}
-          --enable-languages=c,c++
-          --cflags='-Wno-format'
-          --jobs=2
-          --no-bootstrap
-          --no-extras
-          --bin-compress
-          --src-compress
-          --logviewer-command=cat
-          --wait-for-logviewer
-        working-directory: mingw-builds
-
-      - uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
-          path: C:/build/${{ matrix.mode }}/archives/*.7z
-
   # Build the complete toolchains
   build:
-    needs: build-stage1
     strategy:
       fail-fast: false
       matrix:
         mode: ['gcc-12.2.0']
-        arch: ['i686', 'x86_64']
         threading: ['posix', 'win32', 'mcf']
-        exceptions: ['dwarf', 'seh']
         crt: ['ucrt']
-        exclude:
+        include:
           - arch: 'i686'
-            exceptions: 'seh'
-          - arch: 'x86_64'
             exceptions: 'dwarf'
+          - arch: 'x86_64'
+            exceptions: 'seh'
 
     defaults:
       run:
@@ -204,27 +86,35 @@ jobs:
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
         working-directory: mingw-builds
 
-      - name: Download toolchain (i686)
+      - name: Cache toolchain (x86)
+        id: cache-toolchain-mingw32
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
-        uses: actions/download-artifact@v3
+        uses: actions/cache@v3
         with:
-          name: ${{ matrix.mode }}_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
-          path: toolchain-stage1-i686
+          path: D:/toolchains/mingw32
+          key: mingw32-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
 
-      - name: Extract toolchain (i686)
-        if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
-        run: 7z x toolchain-stage1-i686/i686-*.7z -o/d/toolchains
+      - name: Install toolchain (x86)
+        if: ${{ (matrix.arch == 'i686' || matrix.exceptions == 'sjlj') && steps.cache-toolchain-mingw32.outputs.cache-hit != 'true' }}
+        run: |
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2022-11-09/gcc-12.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-12.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip i686-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-rt_v11.7z
+          7z x i686-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-rt_v11.7z -o/d/toolchains
 
-      - name: Download toolchain (x86_64)
+      - name: Cache toolchain (x64)
+        id: cache-toolchain-mingw64
         if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
-        uses: actions/download-artifact@v3
+        uses: actions/cache@v3
         with:
-          name: ${{ matrix.mode }}_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-stage1
-          path: toolchain-stage1-x86_64
+          path: D:/toolchains/mingw64
+          key: mingw64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
 
-      - name: Extract toolchain (x86_64)
-        if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
-        run: 7z x toolchain-stage1-x86_64/x86_64-*.7z -o/d/toolchains
+      - name: Install toolchain (x64)
+        if: ${{ (matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj') && steps.cache-toolchain-mingw64.outputs.cache-hit != 'true' }}
+        run: |
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2022-11-09/gcc-12.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-12.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip x86_64-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-rt_v11.7z
+          7z x x86_64-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-rt_v11.7z -o/d/toolchains
 
       - name: Build
         run: >-
