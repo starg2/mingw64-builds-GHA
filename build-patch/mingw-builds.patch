@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index 7279f32..f06220b 100755
+index be02b27..76790ba 100755
 --- a/build
 +++ b/build
-@@ -319,7 +319,7 @@ while [[ $# > 0 ]]; do
+@@ -321,7 +321,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
@@ -12,7 +12,7 @@ index 7279f32..f06220b 100755
  				;;
  				v3.3.0)
 diff --git a/library/config-win.sh b/library/config-win.sh
-index 0192bff..11e2f43 100644
+index 3ba218a..34dac45 100644
 --- a/library/config-win.sh
 +++ b/library/config-win.sh
 @@ -101,6 +101,7 @@ function func_test_installed_packages {
@@ -43,7 +43,7 @@ index 9e924c8..46e44ab 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 46e5f33..2e15f63 100644
+index 1386cdf..ac950a1 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -93,34 +93,10 @@ index f8e1eb2..7fd6d38 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index 2858386..fd32906 100644
+index f0f3992..fd32906 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
-@@ -81,7 +81,10 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-targets=all --enable-multilib" \
- 		|| echo "--disable-multilib" \
- 	)
--	--enable-languages=$ENABLE_LANGUAGES,lto
-+	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
-+		&& echo "--enable-languages=$ENABLE_LANGUAGES" \
-+		|| echo "--enable-languages=$ENABLE_LANGUAGES,lto"
-+	)
- 	--enable-libstdcxx-time=yes
- 	--enable-threads=$THREADS_MODEL
- 	--enable-libgomp
-@@ -89,7 +92,10 @@ PKG_CONFIGURE_FLAGS=(
- 	$( [[ "$MSVCRT_PHOBOS_OK" == yes && "$D_LANG_ENABLED" == yes ]] \
- 		&& echo "--enable-libphobos"
- 	)
--	--enable-lto
-+	$( [[ "$DISABLE_GCC_LTO" == yes ]] \
-+		&& echo "--disable-lto" \
-+		|| echo "--enable-lto"
-+	)
- 	--enable-graphite
- 	--enable-checking=release
- 	--enable-fully-dynamic-string
-@@ -102,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -108,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -131,31 +107,10 @@ index 2858386..fd32906 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index 45c41e1..510bd02 100644
+index a731321..4c19dae 100644
 --- a/scripts/gcc-trunk.sh
 +++ b/scripts/gcc-trunk.sh
-@@ -51,15 +51,17 @@ PKG_PATCHES=(
- 	gcc/gcc-4.7-stdthreads.patch
- 	gcc/gcc-5.1-iconv.patch
- 	gcc/gcc-4.8-libstdc++export.patch
--	gcc/gcc-4.8.2-fix-for-windows-not-minding-non-existant-parent-dirs.patch
-+	gcc/gcc-12-fix-for-windows-not-minding-non-existant-parent-dirs.patch
- 	gcc/gcc-4.8.2-windows-lrealpath-no-force-lowercase-nor-backslash.patch
- 	gcc/gcc-4.9.1-enable-shared-gnat-implib.mingw.patch
- 	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
--	gcc/gcc-5.2-fix-mingw-pch.patch
-+	gcc/gcc-12-fix-mingw-pch.patch
- 	gcc/gcc-5-dwarf-regression.patch
- 	gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
--	gcc/gcc-10-ktietz-libgomp.patch
-+	gcc/gcc-12-ktietz-libgomp.patch
- 	gcc/gcc-libgomp-ftime64.patch
-+	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
-+	gcc/gcc-10-libgcc-ldflags.patch
- )
- 
- #
-@@ -106,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -117,6 +117,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -165,16 +120,8 @@ index 45c41e1..510bd02 100644
  	--disable-libstdcxx-pch
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
-@@ -135,6 +140,7 @@ PKG_CONFIGURE_FLAGS=(
- 	CPPFLAGS="\"$COMMON_CPPFLAGS\""
- 	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
- 	LD_FOR_TARGET=$PREFIX/bin/ld.exe
-+	--with-boot-ldflags="\"$LDFLAGS -Wl,--disable-dynamicbase -static-libstdc++ -static-libgcc\""
- )
- 
- #
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index 23a7eb4..6a7c6a7 100644
+index cec99f5..1b972b7 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -216,7 +163,7 @@ index 5daff81..c4f9774 100644
  #
  
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index 2464b9c..058b450 100644
+index d2ad09f..664c41d 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@

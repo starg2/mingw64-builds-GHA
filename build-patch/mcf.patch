@@ -1,16 +1,16 @@
 diff --git a/build b/build
-index 4fe6868..858fb27 100755
+index 76790ba..8e781b7 100755
 --- a/build
 +++ b/build
-@@ -76,7 +76,7 @@ readonly RUN_ARGS="$@"
- 	echo "    --with-default-win32-winnt=<ver>     - specifies default windows version the toolchain will target"
+@@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
+ 	echo "    --bootstrapall             - bootstraping GCC & all prerequisites"
+ 	echo "    --no-multilib              - build GCC without multilib support"
  	echo "    --rev=N                    - specifies number of the build revision"
- 	echo "    --threads=<model>          - specifies the threads model for GCC/libstdc++"
--	echo "                                 available: win32, posix"
-+	echo "                                 available: win32, posix, mcf"
- 	echo "    --arch=<i686|x86_64>       - specifies the architecture"
- 	echo "    --mode=<[clang|gcc|python]-version>  - specify building software with version"
- 	echo "    --provided-toolchain=<path> - specifies the path with already existing local toolchain instead of download it"
+-	echo "    --threads=<model>          - specifies the threads model for GCC/libstdc++, available: win32, posix"
++	echo "    --threads=<model>          - specifies the threads model for GCC/libstdc++, available: win32, posix, mcf"
+ 	echo "    --static-gcc               - build static GCC"
+ 	echo "    --with-default-msvcrt=     - specifies msvc version the toolchain will target"
+ 	echo "                                 <msvcrt|msvcr80|msvcr90|msvcr100|msvcr110|msvcr120|ucrt>"
 @@ -373,10 +373,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
@@ -24,7 +24,7 @@ index 4fe6868..858fb27 100755
  				;;
  			esac
  		;;
-@@ -652,6 +652,10 @@ case $BUILD_ARCHITECTURE in
+@@ -653,6 +653,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  
@@ -36,7 +36,7 @@ index 4fe6868..858fb27 100755
  	export PATH=$PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX/bin:$PREREQ_DIR/$BUILD_ARCHITECTURE-libiconv-$LINK_TYPE_SUFFIX/bin:$PREREQ_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/bin:$PATH
  }
 diff --git a/library/subtargets.sh b/library/subtargets.sh
-index 598feda..f74ccb0 100644
+index 9eba9ec..018c570 100644
 --- a/library/subtargets.sh
 +++ b/library/subtargets.sh
 @@ -57,6 +57,16 @@ function func_get_subtargets {
@@ -2533,7 +2533,7 @@ index 933e575..8a7c8f4 100644
  
  [[ $RUNTIME_BRANCH == release ]] && {
 diff --git a/scripts/mingw-w64-runtime-post.sh b/scripts/mingw-w64-runtime-post.sh
-index a233247..8c072ca 100644
+index 743f04b..9cb54a0 100644
 --- a/scripts/mingw-w64-runtime-post.sh
 +++ b/scripts/mingw-w64-runtime-post.sh
 @@ -52,9 +52,9 @@ function runtime_post_install {
@@ -2562,10 +2562,10 @@ index a233247..8c072ca 100644
 +		cp -fv $PREREQ_DIR/$BUILD_ARCHITECTURE-mcfgthread/include/mcfgthread/*.h $PREFIX/$TARGET/include/mcfgthread/ || { echo "24"; return 1; }
 +	}
 +
+ 
  	[[ $USE_MULTILIB == yes ]] && {
  		local _reverse_bits=$(func_get_reverse_arch_bit $BUILD_ARCHITECTURE)
- 		local _reverse_arch=$(func_get_reverse_arch $BUILD_ARCHITECTURE)
-@@ -101,35 +111,46 @@ function runtime_post_install {
+@@ -102,35 +112,46 @@ function runtime_post_install {
  
  		# iconv
  		[[ $GCC_DEPS_LINK_TYPE == *--enable-shared* ]] && {
