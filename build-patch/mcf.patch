@@ -1236,7 +1236,7 @@ index 0000000..008b353
 +
 diff --git a/patches/mingw-w64/mcfgthread-mingw-w64-10.0.patch b/patches/mingw-w64/mcfgthread-mingw-w64-10.0.patch
 new file mode 100644
-index 0000000..26c2297
+index 0000000..b169c69
 --- /dev/null
 +++ b/patches/mingw-w64/mcfgthread-mingw-w64-10.0.patch
 @@ -0,0 +1,1032 @@
@@ -1361,28 +1361,28 @@ index 0000000..26c2297
 + #if defined(__SEH__) && (!defined(__clang__) || __clang_major__ >= 7)
 + #define SEH_INLINE_ASM
 + #endif
-+@@ -68,6 +73,8 @@ extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
++@@ -61,6 +66,8 @@ extern const PIMAGE_TLS_CALLBACK __dyn_tls_init_callback;
 + 
 + extern int __mingw_app_type;
 + 
 ++extern HANDLE __dso_handle;
 ++
-+ HINSTANCE __mingw_winmain_hInstance;
-+ _TCHAR *__mingw_winmain_lpCmdLine;
-+ DWORD __mingw_winmain_nShowCmd = SW_SHOWDEFAULT;
-+@@ -310,6 +317,9 @@ __tmainCRTStartup (void)
-+ 				    StartupInfo.wShowWindow : SW_SHOWDEFAULT;
-+       }
++ static int argc;
++ extern void __main(void);
++ static _TCHAR **argv;
++@@ -256,6 +263,9 @@ __tmainCRTStartup (void)
++     _fpreset ();
++ 
 +     duplicate_ppstrings (argc, &argv);
 ++#ifdef __USING_MCFGTHREAD__
 ++    __MCF_cxa_atexit((__MCF_cxa_dtor_cdecl*)(intptr_t) fflush, NULL, &__dso_handle);
 ++#endif
-+     __main ();
-+ #ifdef WPRFLAG
++     __main (); /* C++ initialization. */
++ #ifdef _UNICODE
 +     __winitenv = envp;
-+@@ -414,9 +424,11 @@ static void duplicate_ppstrings (int ac, char ***av)
++@@ -330,9 +340,11 @@ static void duplicate_ppstrings (int ac, _TCHAR ***av)
++ 	*av = n;
 + }
-+ #endif
 + 
 ++#ifndef __USING_MCFGTHREAD__
 + int __cdecl atexit (_PVFV func)
