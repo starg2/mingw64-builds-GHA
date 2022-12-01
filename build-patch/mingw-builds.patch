@@ -122,7 +122,7 @@ index 9e924c8..e5a699f 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 1386cdf..7c1d1dc 100644
+index 1386cdf..b2137e2 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -133,21 +133,29 @@ index 1386cdf..7c1d1dc 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
-@@ -1021,12 +1020,13 @@ function func_create_mingw_archive_name {
+@@ -1020,17 +1019,18 @@ function func_create_mingw_archive_name {
+ 	# $4 - architecture
  	# $5 - exceptions model
  	# $6 - threads model
- 	# $7 - revision number
-+	# $8 - default mavcrt
+-	# $7 - revision number
++	# $7 - default mavcrt
++	# $8 - revision number
  
  	local _archive=$1/$4-$( \
  		func_map_gcc_name_to_gcc_build_name \
  			$2 \
  			$3 \
 -	)-$6-$5
-+	)-$6-$5-$8
++	)-$6-$5-$7
  
  	_archive=$_archive-rt_${RUNTIME_VERSION}
- 	[[ -n $7 ]] && {
+-	[[ -n $7 ]] && {
+-		_archive=$_archive-rev$7
++	[[ -n $8 ]] && {
++		_archive=$_archive-rev$8
+ 	}
+ 
+ 	echo "$_archive.7z"
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index a243eaa..bc6ba89 100644
 --- a/scripts/bzip2.sh
@@ -257,17 +265,17 @@ index 5daff81..c4f9774 100644
  #
  
 diff --git a/scripts/mingw-compress.sh b/scripts/mingw-compress.sh
-index 7ae0612..eb5cb71 100644
+index 7ae0612..493fb5d 100644
 --- a/scripts/mingw-compress.sh
 +++ b/scripts/mingw-compress.sh
-@@ -50,6 +50,7 @@ function func_compress_mingw() {
+@@ -49,6 +49,7 @@ function func_compress_mingw() {
+ 					$BUILD_ARCHITECTURE \
  					$EXCEPTIONS_MODEL \
  					$THREADS_MODEL \
- 					$REV_NUM \
 +					$MSVCRT_VERSION \
+ 					$REV_NUM \
  			)
  		;;
- 		python)
 diff --git a/scripts/mingw-w64-api.sh b/scripts/mingw-w64-api.sh
 index 721e21c..6f34e62 100644
 --- a/scripts/mingw-w64-api.sh
