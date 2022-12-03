@@ -54,7 +54,7 @@ index f8a6789..01d5fba 100644
  
      needs: release
 diff --git a/build b/build
-index be02b27..9d6d5bf 100755
+index be02b27..2babfc6 100755
 --- a/build
 +++ b/build
 @@ -321,7 +321,7 @@ while [[ $# > 0 ]]; do
@@ -82,6 +82,14 @@ index be02b27..9d6d5bf 100755
  		readonly MINGW_BUILD_NAME=$MINGW_BUILD_NAME-rt_${RUNTIME_VERSION}$([[ -n $REV_NUM ]] && echo -n -rev$REV_NUM)
  
  		readonly MINGWPREFIX=/mingw$(func_get_arch_bit ${BUILD_ARCHITECTURE})
+@@ -965,6 +965,7 @@ func_clear_env
+ 			$BUILD_ARCHITECTURE \
+ 			$EXCEPTIONS_MODEL \
+ 			$THREADS_MODEL \
++			$MSVCRT_VERSION \
+ 			$REV_NUM \
+ 	)
+ 
 diff --git a/library/config-win.sh b/library/config-win.sh
 index 3ba218a..34dac45 100644
 --- a/library/config-win.sh
@@ -122,7 +130,7 @@ index 9e924c8..e5a699f 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 1386cdf..b2137e2 100644
+index 1386cdf..6a8e00f 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -138,7 +146,7 @@ index 1386cdf..b2137e2 100644
  	# $5 - exceptions model
  	# $6 - threads model
 -	# $7 - revision number
-+	# $7 - default mavcrt
++	# $7 - default msvcrt
 +	# $8 - revision number
  
  	local _archive=$1/$4-$( \
