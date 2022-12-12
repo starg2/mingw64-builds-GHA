@@ -1,60 +1,5 @@
-diff --git a/.github/workflows/build_cmake.yml b/.github/workflows/build_cmake.yml
-index f8a6789..01d5fba 100644
---- a/.github/workflows/build_cmake.yml
-+++ b/.github/workflows/build_cmake.yml
-@@ -12,22 +12,22 @@ jobs:
-         config:
-         - {
-             name: "x86_64 posix seh",
--            artifact: "x86_64-12.2.0-release-posix-seh-rt_v10-rev0.7z",
-+            artifact: "x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev0.7z",
-             build_cmd: "--mode=gcc-12.2.0 --buildroot=/c/buildroot --jobs=4 --rev=0 --rt-version=v10 --threads=posix --exceptions=seh --arch=x86_64 --bin-compress --enable-languages=c,c++,fortran"
-           }
-         - {
-             name: "x86_64 win32 seh",
--            artifact: "x86_64-12.2.0-release-win32-seh-rt_v10-rev0.7z",
-+            artifact: "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev0.7z",
-             build_cmd: "--mode=gcc-12.2.0 --buildroot=/c/buildroot --jobs=4 --rev=0 --rt-version=v10 --threads=win32 --exceptions=seh --arch=x86_64 --bin-compress --enable-languages=c,c++,fortran"
-           }
-         - {
-             name: "i686 posix dwarf",
--            artifact: "i686-12.2.0-release-posix-dwarf-rt_v10-rev0.7z",
-+            artifact: "i686-12.2.0-release-posix-dwarf-msvcrt-rt_v10-rev0.7z",
-             build_cmd: "--mode=gcc-12.2.0 --buildroot=/c/buildroot --jobs=4 --rev=0 --rt-version=v10 --threads=posix --exceptions=dwarf --arch=i686 --bin-compress --enable-languages=c,c++,fortran"
-           }
-         - {
-             name: "i686 win32 dwarf",
--            artifact: "i686-12.2.0-release-win32-dwarf-rt_v10-rev0.7z",
-+            artifact: "i686-12.2.0-release-win32-dwarf-msvcrt-rt_v10-rev0.7z",
-             build_cmd: "--mode=gcc-12.2.0 --buildroot=/c/buildroot --jobs=4 --rev=0 --rt-version=v10 --threads=win32 --exceptions=dwarf --arch=i686 --bin-compress --enable-languages=c,c++,fortran"
-           }
- 
-@@ -84,19 +84,19 @@ jobs:
-         config:
-         - {
-             name: "x86_64 posix seh",
--            artifact: "x86_64-12.2.0-release-posix-seh-rt_v10-rev0.7z"
-+            artifact: "x86_64-12.2.0-release-posix-seh-msvcrt-rt_v10-rev0.7z"
-           }
-         - {
-             name: "x86_64 win32 seh",
--            artifact: "x86_64-12.2.0-release-win32-seh-rt_v10-rev0.7z"
-+            artifact: "x86_64-12.2.0-release-win32-seh-msvcrt-rt_v10-rev0.7z"
-           }
-         - {
-             name: "i686 posix dwarf",
--            artifact: "i686-12.2.0-release-posix-dwarf-rt_v10-rev0.7z"
-+            artifact: "i686-12.2.0-release-posix-dwarf-msvcrt-rt_v10-rev0.7z"
-           }
-         - {
-             name: "i686 win32 dwarf",
--            artifact: "i686-12.2.0-release-win32-dwarf-rt_v10-rev0.7z"
-+            artifact: "i686-12.2.0-release-win32-dwarf-msvcrt-rt_v10-rev0.7z"
-           }
- 
-     needs: release
 diff --git a/build b/build
-index be02b27..2babfc6 100755
+index 0be988e..2babfc6 100755
 --- a/build
 +++ b/build
 @@ -321,7 +321,7 @@ while [[ $# > 0 ]]; do
@@ -66,30 +11,6 @@ index be02b27..2babfc6 100755
  					RUNTIME_BRANCH="master"
  				;;
  				v3.3.0)
-@@ -566,13 +566,13 @@ fi
- 		readonly GCC_PART_NAME=${GCC_PART_NAME//./}
- 		readonly RUNTIME_PART_NAME=${RUNTIME_VERSION//./}
- 		readonly RUNTIME_MAJOR_VERSION=$(echo $RUNTIME_VERSION | sed 's@^[^0-9]*\([0-9]\+\).*@\1@')
--		BASE_BUILD_DIR=$ROOT_DIR/${BUILD_ARCHITECTURE}-$GCC_PART_NAME-$THREADS_MODEL-$EXCEPTIONS_MODEL-rt_${RUNTIME_PART_NAME}${REV_STRING}
-+		BASE_BUILD_DIR=$ROOT_DIR/${BUILD_ARCHITECTURE}-$GCC_PART_NAME-$THREADS_MODEL-$EXCEPTIONS_MODEL-$MSVCRT_VERSION-rt_${RUNTIME_PART_NAME}${REV_STRING}
- 		MINGW_BUILD_NAME=${BUILD_ARCHITECTURE}-${GCC_NAME/gcc-/}
- 		[[ $BUILD_SHARED_GCC == no ]] && {
- 			BASE_BUILD_DIR=$BASE_BUILD_DIR-s
- 			MINGW_BUILD_NAME=$MINGW_BUILD_NAME-static
- 		}
--		MINGW_BUILD_NAME=$MINGW_BUILD_NAME$([[ $USE_MULTILIB == yes ]] && echo -n -multilib)-$THREADS_MODEL-$EXCEPTIONS_MODEL
-+		MINGW_BUILD_NAME=$MINGW_BUILD_NAME$([[ $USE_MULTILIB == yes ]] && echo -n -multilib)-$THREADS_MODEL-$EXCEPTIONS_MODEL-$MSVCRT_VERSION
- 		readonly MINGW_BUILD_NAME=$MINGW_BUILD_NAME-rt_${RUNTIME_VERSION}$([[ -n $REV_NUM ]] && echo -n -rev$REV_NUM)
- 
- 		readonly MINGWPREFIX=/mingw$(func_get_arch_bit ${BUILD_ARCHITECTURE})
-@@ -965,6 +965,7 @@ func_clear_env
- 			$BUILD_ARCHITECTURE \
- 			$EXCEPTIONS_MODEL \
- 			$THREADS_MODEL \
-+			$MSVCRT_VERSION \
- 			$REV_NUM \
- 	)
- 
 diff --git a/library/config-win.sh b/library/config-win.sh
 index 3ba218a..34dac45 100644
 --- a/library/config-win.sh
@@ -103,18 +24,10 @@ index 3ba218a..34dac45 100644
  
  	echo "--> installing required packages..."
 diff --git a/library/config.sh b/library/config.sh
-index 9e924c8..e5a699f 100644
+index 1529270..e5a699f 100644
 --- a/library/config.sh
 +++ b/library/config.sh
-@@ -115,6 +115,7 @@ USE_MULTILIB=yes
- STRIP_ON_INSTALL=yes
- BOOTSTRAPING=yes
- BOOTSTRAPINGALL=no
-+MSVCRT_VERSION=msvcrt
- THREADS_MODEL=posix
- REV_NUM=
- COMPRESSING_BINS=no
-@@ -189,10 +190,10 @@ esac
+@@ -190,10 +190,10 @@ esac
  
  # **************************************************************************
  
@@ -130,7 +43,7 @@ index 9e924c8..e5a699f 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 1386cdf..6a8e00f 100644
+index b16c6f3..6a8e00f 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -141,29 +54,6 @@ index 1386cdf..6a8e00f 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
-@@ -1020,17 +1019,18 @@ function func_create_mingw_archive_name {
- 	# $4 - architecture
- 	# $5 - exceptions model
- 	# $6 - threads model
--	# $7 - revision number
-+	# $7 - default msvcrt
-+	# $8 - revision number
- 
- 	local _archive=$1/$4-$( \
- 		func_map_gcc_name_to_gcc_build_name \
- 			$2 \
- 			$3 \
--	)-$6-$5
-+	)-$6-$5-$7
- 
- 	_archive=$_archive-rt_${RUNTIME_VERSION}
--	[[ -n $7 ]] && {
--		_archive=$_archive-rev$7
-+	[[ -n $8 ]] && {
-+		_archive=$_archive-rev$8
- 	}
- 
- 	echo "$_archive.7z"
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index a243eaa..bc6ba89 100644
 --- a/scripts/bzip2.sh
@@ -272,48 +162,6 @@ index 5daff81..c4f9774 100644
  
  #
  
-diff --git a/scripts/mingw-compress.sh b/scripts/mingw-compress.sh
-index 7ae0612..493fb5d 100644
---- a/scripts/mingw-compress.sh
-+++ b/scripts/mingw-compress.sh
-@@ -49,6 +49,7 @@ function func_compress_mingw() {
- 					$BUILD_ARCHITECTURE \
- 					$EXCEPTIONS_MODEL \
- 					$THREADS_MODEL \
-+					$MSVCRT_VERSION \
- 					$REV_NUM \
- 			)
- 		;;
-diff --git a/scripts/mingw-w64-api.sh b/scripts/mingw-w64-api.sh
-index 721e21c..6f34e62 100644
---- a/scripts/mingw-w64-api.sh
-+++ b/scripts/mingw-w64-api.sh
-@@ -69,9 +69,7 @@ PKG_CONFIGURE_FLAGS=(
- 	$( [[ -n "$WIN32_WINNT_VERSION" ]] \
- 		&& echo "--with-default-win32-winnt=$WIN32_WINNT_VERSION"
- 	)
--	$( [[ -n "$MSVCRT_VERSION" ]] \
--		&& echo "--with-default-msvcrt=$MSVCRT_VERSION"
--	)
-+	--with-default-msvcrt=$MSVCRT_VERSION
- 	#
- 	CFLAGS="\"$COMMON_CFLAGS\""
- 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
-diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
-index 4a8d6ea..da7dd5f 100644
---- a/scripts/mingw-w64-crt.sh
-+++ b/scripts/mingw-w64-crt.sh
-@@ -81,9 +81,7 @@ PKG_CONFIGURE_FLAGS=(
- 	#
- 	$LIBCONF
- 	--enable-wildcard
--	$( [[ -n "$MSVCRT_VERSION" ]] \
--		&& echo "--with-default-msvcrt=$MSVCRT_VERSION"
--	)
-+	--with-default-msvcrt=$MSVCRT_VERSION
- 	#
- 	CFLAGS="\"$COMMON_CFLAGS\""
- 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
 index d2ad09f..664c41d 100644
 --- a/scripts/openssl.sh
@@ -455,27 +303,6 @@ index d8e7194..40eb3f4 100644
  PKG_NAME=tk${PKG_VERSION}
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
-diff --git a/scripts/winpthreads.sh b/scripts/winpthreads.sh
-index baf7e28..65fff85 100644
---- a/scripts/winpthreads.sh
-+++ b/scripts/winpthreads.sh
-@@ -67,11 +67,11 @@ PKG_CONFIGURE_FLAGS=(
-     # mingw-builds) with a first/initial bootstrap build of a toolchain with ucrt,
-     # this linkage isn't needed then either. so assume the first ucrt mingw-build
-     # toolchain would be built with a "--rev=0" arg.
--	$( [[ $MSVCRT_VERSION == ucrt ]] && \
--		[[ $BOOTSTRAPING == no ]] && \
--			[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
--                [[ $REV_NUM -eq 0 ]] && \
--                    echo "LIBS=\"-lucrtbase\"" )
-+	#$( [[ $MSVCRT_VERSION == ucrt ]] && \
-+	#	[[ $BOOTSTRAPING == no ]] && \
-+	#		[[ $RUNTIME_MAJOR_VERSION -ge 10 ]] && \
-+    #            [[ $REV_NUM -eq 0 ]] && \
-+    #                echo "LIBS=\"-lucrtbase\"" )
- 	CFLAGS="\"$COMMON_CFLAGS\""
- 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
- 	CPPFLAGS="\"$COMMON_CPPFLAGS\""
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
 index 92bb22a..91e10d7 100644
 --- a/scripts/xz-utils.sh
