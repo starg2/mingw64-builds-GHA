@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index 0be988e..2babfc6 100755
+index 02c1d0d..30a240e 100755
 --- a/build
 +++ b/build
-@@ -321,7 +321,7 @@ while [[ $# > 0 ]]; do
+@@ -319,7 +319,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
@@ -12,7 +12,7 @@ index 0be988e..2babfc6 100755
  				;;
  				v3.3.0)
 diff --git a/library/config-win.sh b/library/config-win.sh
-index 3ba218a..34dac45 100644
+index e205cc0..033c52b 100644
 --- a/library/config-win.sh
 +++ b/library/config-win.sh
 @@ -101,6 +101,7 @@ function func_test_installed_packages {
@@ -54,6 +54,31 @@ index b16c6f3..6a8e00f 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
+diff --git a/patches/mingw-w64/push-abort-macro.patch b/patches/mingw-w64/push-abort-macro.patch
+new file mode 100644
+index 0000000..ea1543b
+--- /dev/null
++++ b/patches/mingw-w64/push-abort-macro.patch
+@@ -0,0 +1,19 @@
++--- a/mingw-w64-headers/include/msxml.h
+++++ b/mingw-w64-headers/include/msxml.h
++@@ -16,6 +16,9 @@
++ #ifndef __msxml_h__
++ #define __msxml_h__
++ 
+++#pragma push_macro("abort")
+++#undef abort
+++
++ #ifndef __WIDL_INLINE
++ #if defined(__cplusplus) || defined(_MSC_VER)
++ #define __WIDL_INLINE inline
++@@ -10391,4 +10394,6 @@
++ }
++ #endif
++ 
+++#pragma pop_macro("abort")
+++
++ #endif /* __msxml_h__ */
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index a243eaa..bc6ba89 100644
 --- a/scripts/bzip2.sh
@@ -107,10 +132,10 @@ index f0f3992..fd32906 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index a731321..4c19dae 100644
+index 1377495..63e5e49 100644
 --- a/scripts/gcc-trunk.sh
 +++ b/scripts/gcc-trunk.sh
-@@ -117,6 +117,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -108,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -162,6 +187,21 @@ index 5daff81..c4f9774 100644
  
  #
  
+diff --git a/scripts/mingw-w64-api.sh b/scripts/mingw-w64-api.sh
+index 6f34e62..6aef0cb 100644
+--- a/scripts/mingw-w64-api.sh
++++ b/scripts/mingw-w64-api.sh
+@@ -47,7 +47,9 @@ PKG_PRIORITY=runtime
+ 
+ #
+ 
+-PKG_PATCHES=()
++PKG_PATCHES=(
++	mingw-w64/push-abort-macro.patch
++)
+ 
+ #
+ 
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
 index d2ad09f..664c41d 100644
 --- a/scripts/openssl.sh
@@ -176,7 +216,7 @@ index d2ad09f..664c41d 100644
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 3d93bc9..a8df7e2 100644
+index 3d93bc9..a6bcb7b 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -184,7 +224,7 @@ index 3d93bc9..a8df7e2 100644
  # **************************************************************************
  
 -PKG_VERSION=3.9.10
-+PKG_VERSION=3.10.8
++PKG_VERSION=3.10.9
  PKG_NAME=Python-${PKG_VERSION}
  PKG_DIR_NAME=Python-${PKG_VERSION}
  PKG_TYPE=git
@@ -193,7 +233,7 @@ index 3d93bc9..a8df7e2 100644
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard eca05b9051adbc73d825e68f1363798c36124618" # Reset to this commit hash for reproducible builds
++	"git reset --hard 101c2b0778f1a02169d7d649511e7b75fb93fbfa" # Reset to this commit hash for reproducible builds
  )
  
  #
