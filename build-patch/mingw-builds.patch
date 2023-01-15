@@ -146,7 +146,7 @@ index 1377495..63e5e49 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index cec99f5..1b972b7 100644
+index af075f7..5002ac4 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -187,6 +187,19 @@ index 5daff81..c4f9774 100644
  
  #
  
+diff --git a/scripts/mingw-compress.sh b/scripts/mingw-compress.sh
+index 493fb5d..6df6225 100644
+--- a/scripts/mingw-compress.sh
++++ b/scripts/mingw-compress.sh
+@@ -67,7 +67,7 @@ function func_compress_mingw() {
+ 
+ 		[[ ! -f $ARCHIVE_NAME ]] && {
+ 			echo -n "---> \"$(basename $ARCHIVE_NAME)\" ... "
+-			( cd $BUILDS_DIR && 7za a -t7z -mx=9 -mfb=64 -md=64m -ms=on \
++			( cd $BUILDS_DIR && 7za a -l -t7z -mx=9 -mfb=64 -md=64m -ms=on \
+ 				"$ARCHIVE_NAME" "$PREFIX" >/dev/null 2>&1 \
+ 			)
+ 			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-api.sh b/scripts/mingw-w64-api.sh
 index 6f34e62..6aef0cb 100644
 --- a/scripts/mingw-w64-api.sh
