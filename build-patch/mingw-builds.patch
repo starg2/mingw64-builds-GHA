@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index 02c1d0d..30a240e 100755
+index d7e2b49..5cc8d29 100755
 --- a/build
 +++ b/build
 @@ -319,7 +319,7 @@ while [[ $# > 0 ]]; do
@@ -12,7 +12,7 @@ index 02c1d0d..30a240e 100755
  				;;
  				v3.3.0)
 diff --git a/library/config-win.sh b/library/config-win.sh
-index e205cc0..033c52b 100644
+index 4f9a8f0..9afae30 100644
 --- a/library/config-win.sh
 +++ b/library/config-win.sh
 @@ -101,6 +101,7 @@ function func_test_installed_packages {
@@ -24,7 +24,7 @@ index e205cc0..033c52b 100644
  
  	echo "--> installing required packages..."
 diff --git a/library/config.sh b/library/config.sh
-index 1529270..e5a699f 100644
+index e32f5c7..ec5f6d2 100644
 --- a/library/config.sh
 +++ b/library/config.sh
 @@ -190,10 +190,10 @@ esac
@@ -43,7 +43,7 @@ index 1529270..e5a699f 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index b16c6f3..6a8e00f 100644
+index 8ef7751..e3d3284 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -54,33 +54,672 @@ index b16c6f3..6a8e00f 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
-diff --git a/patches/mingw-w64/push-abort-macro.patch b/patches/mingw-w64/push-abort-macro.patch
+diff --git a/patches/openssl/openssl-3.0.8-relocation.patch b/patches/openssl/openssl-3.0.8-relocation.patch
 new file mode 100644
-index 0000000..ea1543b
+index 0000000..68b276c
 --- /dev/null
-+++ b/patches/mingw-w64/push-abort-macro.patch
-@@ -0,0 +1,19 @@
-+--- a/mingw-w64-headers/include/msxml.h
-++++ b/mingw-w64-headers/include/msxml.h
-+@@ -16,6 +16,9 @@
-+ #ifndef __msxml_h__
-+ #define __msxml_h__
++++ b/patches/openssl/openssl-3.0.8-relocation.patch
+@@ -0,0 +1,658 @@
++--- crypto/build.info.orig
+++++ crypto/build.info
++@@ -105,7 +105,7 @@
++         mem.c mem_sec.c \
++         cversion.c info.c cpt_err.c ebcdic.c uid.c o_time.c o_dir.c \
++         o_fopen.c getenv.c o_init.c init.c trace.c provider.c provider_child.c \
++-        punycode.c passphrase.c
+++        punycode.c passphrase.c pathtools.c
++ SOURCE[../providers/libfips.a]=$UTIL_COMMON
 + 
-++#pragma push_macro("abort")
-++#undef abort
++ SOURCE[../libcrypto]=$UPLINKSRC
++--- crypto/engine/eng_list.c.orig
+++++ crypto/engine/eng_list.c
++@@ -12,6 +12,7 @@
++ #define OPENSSL_SUPPRESS_DEPRECATED
++ 
++ #include "eng_local.h"
+++#include "pathtools.h"
++ 
++ /*
++  * The linked-list of pointers to engine types. engine_list_head incorporates
++@@ -39,6 +40,20 @@
++  * cleanup.
++  */
++ 
+++char * enginedir_relocation(const char *path)
+++{
+++  char exe_path[PATH_MAX];
+++  get_executable_path (NULL, &exe_path[0], sizeof(exe_path)/sizeof(exe_path[0]));
+++  if (strrchr (exe_path, '/') != NULL)
+++  {
+++     strrchr (exe_path, '/')[1] = '\0';
+++  }
+++  char * rel_to_datadir = get_relative_path (OPENSSLBIN, path);
+++  strcat (exe_path, rel_to_datadir);
+++  simplify_path (&exe_path[0]);
+++  return malloc_copy_string(exe_path);
+++}
 ++
-+ #ifndef __WIDL_INLINE
-+ #if defined(__cplusplus) || defined(_MSC_VER)
-+ #define __WIDL_INLINE inline
-+@@ -10391,4 +10394,6 @@
++ static void engine_list_cleanup(void)
++ {
++     ENGINE *iterator = engine_list_head;
++@@ -413,8 +428,10 @@
++      * Prevent infinite recursion if we're looking for the dynamic engine.
++      */
++     if (strcmp(id, "dynamic")) {
++-        if ((load_dir = ossl_safe_getenv("OPENSSL_ENGINES")) == NULL)
++-            load_dir = ENGINESDIR;
+++        if ((load_dir = ossl_safe_getenv("OPENSSL_ENGINES")) == NULL) {
+++            const char * reloc_engines = enginedir_relocation(ENGINESDIR);
+++            load_dir = reloc_engines;
+++        }
++         iterator = ENGINE_by_id("dynamic");
++         if (!iterator || !ENGINE_ctrl_cmd_string(iterator, "ID", id, 0) ||
++             !ENGINE_ctrl_cmd_string(iterator, "DIR_LOAD", "2", 0) ||
++--- /dev/null
+++++ crypto/pathtools.c
++@@ -0,0 +1,499 @@
+++/*
+++      .Some useful path tools.
+++        .ASCII only for now.
+++   .Written by Ray Donnelly in 2014.
+++   .Licensed under CC0 (and anything.
+++  .else you need to license it under).
+++      .No warranties whatsoever.
+++  .email: <mingw.android@gmail.com>.
+++ */
+++
+++#if defined(__APPLE__)
+++#include <stdlib.h>
+++#else
+++#include <malloc.h>
+++#endif
+++#include <limits.h>
+++#include <stdio.h>
+++#include <string.h>
+++#if defined(__linux__) || defined(__CYGWIN__) || defined(__MSYS__)
+++#include <alloca.h>
+++#endif
+++#include <unistd.h>
+++
+++/* If you don't define this, then get_executable_path()
+++   can only use argv[0] which will often not work well */
+++#define IMPLEMENT_SYS_GET_EXECUTABLE_PATH
+++
+++#if defined(IMPLEMENT_SYS_GET_EXECUTABLE_PATH)
+++#if defined(__linux__) || defined(__CYGWIN__) || defined(__MSYS__)
+++/* Nothing needed, unistd.h is enough. */
+++#elif defined(__APPLE__)
+++#include <mach-o/dyld.h>
+++#elif defined(_WIN32)
+++#define WIN32_MEAN_AND_LEAN
+++#include <windows.h>
+++#include <psapi.h>
+++#endif
+++#endif /* defined(IMPLEMENT_SYS_GET_EXECUTABLE_PATH) */
+++
+++#include "pathtools.h"
+++
+++char *
+++malloc_copy_string(char const * original)
+++{
+++  char * result = (char *) malloc (sizeof (char*) * strlen (original)+1);
+++  if (result != NULL)
+++  {
+++    strcpy (result, original);
+++  }
+++  return result;
+++}
+++
+++void
+++sanitise_path(char * path)
+++{
+++  size_t path_size = strlen (path);
+++
+++  /* Replace any '\' with '/' */
+++  char * path_p = path;
+++  while ((path_p = strchr (path_p, '\\')) != NULL)
+++  {
+++    *path_p = '/';
+++  }
+++  /* Replace any '//' with '/' */
+++  path_p = path;
+++  while ((path_p = strstr (path_p, "//")) != NULL)
+++  {
+++    memmove (path_p, path_p + 1, path_size--);
+++  }
+++  return;
+++}
+++
+++char *
+++get_relative_path(char const * from_in, char const * to_in)
+++{
+++  size_t from_size = (from_in == NULL) ? 0 : strlen (from_in);
+++  size_t to_size = (to_in == NULL) ? 0 : strlen (to_in);
+++  size_t max_size = (from_size + to_size) * 2 + 4;
+++  char * scratch_space = (char *) alloca (from_size + 1 + to_size + 1 + max_size + max_size);
+++  char * from;
+++  char * to;
+++  char * common_part;
+++  char * result;
+++  size_t count;
+++
+++  /* No to, return "./" */
+++  if (to_in == NULL)
+++  {
+++    return malloc_copy_string ("./");
+++  }
+++
+++  /* If alloca failed or no from was given return a copy of to */
+++  if (   from_in == NULL
+++      || scratch_space == NULL )
+++  {
+++    return malloc_copy_string (to_in);
+++  }
+++
+++  from = scratch_space;
+++  strcpy (from, from_in);
+++  to = from + from_size + 1;
+++  strcpy (to, to_in);
+++  common_part = to + to_size + 1;
+++  result = common_part + max_size;
+++  simplify_path (from);
+++  simplify_path (to);
+++
+++  result[0] = '\0';
+++
+++  size_t match_size_dirsep = 0;  /* The match size up to the last /. Always wind back to this - 1 */
+++  size_t match_size = 0;         /* The running (and final) match size. */
+++  size_t largest_size = (from_size > to_size) ? from_size : to_size;
+++  int to_final_is_slash = (to[to_size-1] == '/') ? 1 : 0;
+++  char from_c;
+++  char to_c;
+++  for (match_size = 0; match_size < largest_size; ++match_size)
+++  {
+++    /* To simplify the logic, always pretend the strings end with '/' */
+++    from_c = (match_size < from_size) ? from[match_size] : '/';
+++    to_c =   (match_size <   to_size) ?   to[match_size] : '/';
+++
+++    if (from_c != to_c)
+++    {
+++      if (from_c != '\0' || to_c != '\0')
+++      {
+++        match_size = match_size_dirsep;
+++      }
+++      break;
+++    }
+++    else if (from_c == '/')
+++    {
+++      match_size_dirsep = match_size;
+++    }
+++  }
+++  strncpy (common_part, from, match_size);
+++  common_part[match_size] = '\0';
+++  from += match_size;
+++  to += match_size;
+++  size_t ndotdots = 0;
+++  char const* from_last = from + strlen(from) - 1;
+++  while ((from = strchr (from, '/')) && from != from_last)
+++  {
+++    ++ndotdots;
+++    ++from;
+++  }
+++  for (count = 0; count < ndotdots; ++count)
+++  {
+++    strcat(result, "../");
+++  }
+++  if (strlen(to) > 0)
+++  {
+++    strcat(result, to+1);
+++  }
+++  /* Make sure that if to ends with '/' result does the same, and
+++     vice-versa. */
+++  size_t size_result = strlen(result);
+++  if ((to_final_is_slash == 1)
+++      && (!size_result || result[size_result-1] != '/'))
+++  {
+++    strcat (result, "/");
+++  }
+++  else if (!to_final_is_slash
+++           && size_result && result[size_result-1] == '/')
+++  {
+++    result[size_result-1] = '\0';
+++  }
+++
+++  return malloc_copy_string (result);
+++}
+++
+++void
+++simplify_path(char * path)
+++{
+++  ssize_t n_toks = 1; /* in-case we need an empty initial token. */
+++  ssize_t i, j;
+++  size_t tok_size;
+++  size_t in_size = strlen (path);
+++  int it_ended_with_a_slash = (path[in_size - 1] == '/') ? 1 : 0;
+++  char * result = path;
+++  sanitise_path(result);
+++  char * result_p = result;
+++
+++  do
+++  {
+++    ++n_toks;
+++    ++result_p;
+++  } while ((result_p = strchr (result_p, '/')) != NULL);
+++
+++  result_p = result;
+++  char const ** toks = (char const **) alloca (sizeof (char const*) * n_toks);
+++  n_toks = 0;
+++  do
+++  {
+++    if (result_p > result)
+++    {
+++      *result_p++ = '\0';
+++    }
+++    else if (*result_p == '/')
+++    {
+++      /* A leading / creates an empty initial token. */
+++      toks[n_toks++] = result_p;
+++      *result_p++ = '\0';
+++    }
+++    toks[n_toks++] = result_p;
+++  } while ((result_p = strchr (result_p, '/')) != NULL);
+++
+++  /* Remove all non-leading '.' and any '..' we can match
+++     with an earlier forward path (i.e. neither '.' nor '..') */
+++  for (i = 1; i < n_toks; ++i)
+++  {
+++    int removals[2] = { -1, -1 };
+++    if ( strcmp (toks[i], "." ) == 0)
+++    {
+++      removals[0] = i;
+++    }
+++    else if ( strcmp (toks[i], ".." ) == 0)
+++    {
+++      /* Search backwards for a forward path to collapse.
+++         If none are found then the .. also stays. */
+++      for (j = i - 1; j > -1; --j)
+++      {
+++        if ( strcmp (toks[j], "." )
+++          && strcmp (toks[j], ".." ) )
+++        {
+++          removals[0] = j;
+++          removals[1] = i;
+++          break;
+++        }
+++      }
+++    }
+++    for (j = 0; j < 2; ++j)
+++    {
+++      if (removals[j] >= 0) /* Can become -2 */
+++      {
+++        --n_toks;
+++        memmove (&toks[removals[j]], &toks[removals[j]+1], (n_toks - removals[j])*sizeof (char*));
+++        --i;
+++        if (!j)
+++        {
+++          --removals[1];
+++        }
+++      }
+++    }
+++  }
+++  result_p = result;
+++  for (i = 0; i < n_toks; ++i)
+++  {
+++    tok_size = strlen(toks[i]);
+++    memmove (result_p, toks[i], tok_size);
+++    result_p += tok_size;
+++    if ((!i || tok_size) && ((i < n_toks - 1) || it_ended_with_a_slash == 1))
+++    {
+++      *result_p = '/';
+++      ++result_p;
+++    }
+++  }
+++  *result_p = '\0';
+++}
+++
+++/* Returns actual_to by calculating the relative path from -> to and
+++   applying that to actual_from. An assumption that actual_from is a
+++   dir is made, and it may or may not end with a '/' */
+++char const *
+++get_relocated_path (char const * from, char const * to, char const * actual_from)
+++{
+++  char const * relative_from_to = get_relative_path (from, to);
+++  char * actual_to = (char *) malloc (strlen(actual_from) + 2 + strlen(relative_from_to));
+++  return actual_to;
+++}
+++
+++int
+++get_executable_path(char const * argv0, char * result, ssize_t max_size)
+++{
+++  char * system_result = (char *) alloca (max_size);
+++  ssize_t system_result_size = -1;
+++  ssize_t result_size = -1;
+++
+++  if (system_result != NULL)
+++  {
+++#if defined(IMPLEMENT_SYS_GET_EXECUTABLE_PATH)
+++#if defined(__linux__) || defined(__CYGWIN__) || defined(__MSYS__)
+++    system_result_size = readlink("/proc/self/exe", system_result, max_size);
+++#elif defined(__APPLE__)
+++    uint32_t bufsize = (uint32_t)max_size;
+++    if (_NSGetExecutablePath(system_result, &bufsize) == 0)
+++    {
+++      system_result_size = (ssize_t)bufsize;
+++    }
+++#elif defined(_WIN32)
+++    unsigned long bufsize = (unsigned long)max_size;
+++    system_result_size = GetModuleFileNameA(NULL, system_result, bufsize);
+++    if (system_result_size == 0 || system_result_size == (ssize_t)bufsize)
+++    {
+++      /* Error, possibly not enough space. */
+++      system_result_size = -1;
+++    }
+++    else
+++    {
+++      /* Early conversion to unix slashes instead of more changes
+++         everywhere else .. */
+++      char * winslash;
+++      system_result[system_result_size] = '\0';
+++      while ((winslash = strchr (system_result, '\\')) != NULL)
+++      {
+++        *winslash = '/';
+++      }
+++    }
+++#else
+++#warning "Don't know how to get executable path on this system"
+++#endif
+++#endif /* defined(IMPLEMENT_SYS_GET_EXECUTABLE_PATH) */
+++  }
+++  /* Use argv0 as a default in-case of failure */
+++  if (system_result_size != -1)
+++  {
+++    strncpy (result, system_result, system_result_size);
+++    result[system_result_size] = '\0';
+++  }
+++  else
+++  {
+++    if (argv0 != NULL)
+++    {
+++      strncpy (result, argv0, max_size);
+++      result[max_size-1] = '\0';
+++    }
+++    else
+++    {
+++      result[0] = '\0';
+++    }
+++  }
+++  result_size = strlen (result);
+++  return result_size;
+++}
+++
+++char const *
+++strip_n_prefix_folders(char const * path, size_t n)
+++{
+++  if (path == NULL)
+++  {
+++    return NULL;
+++  }
+++
+++  if (path[0] != '/')
+++  {
+++    return path;
+++  }
+++
+++  char const * last = path;
+++  while (n-- && path != NULL)
+++  {
+++    last = path;
+++    path = strchr (path + 1, '/');
+++  }
+++  return (path == NULL) ? last : path;
+++}
+++
+++void
+++strip_n_suffix_folders(char * path, size_t n)
+++{
+++  if (path == NULL)
+++  {
+++    return;
+++  }
+++  while (n--)
+++  {
+++    if (strrchr (path + 1, '/'))
+++    {
+++      *strrchr (path + 1, '/') = '\0';
+++    }
+++    else
+++    {
+++      return;
+++    }
+++  }
+++  return;
+++}
+++
+++size_t
+++split_path_list(char const * path_list, char split_char, char *** arr)
+++{
+++  size_t path_count;
+++  size_t path_list_size;
+++  char const * path_list_p;
+++
+++  path_list_p = path_list;
+++  if (path_list == NULL || path_list[0] == '\0')
+++  {
+++    return 0;
+++  }
+++  path_list_size = strlen (path_list);
+++
+++  path_count = 0;
+++  do
+++  {
+++    ++path_count;
+++    ++path_list_p;
+++  }
+++  while ((path_list_p = strchr (path_list_p, split_char)) != NULL);
+++
+++  /* allocate everything in one go. */
+++  char * all_memory = (char *) malloc (sizeof (char *) * path_count + strlen(path_list) + 1);
+++  if (all_memory == NULL)
+++    return 0;
+++  *arr = (char **)all_memory;
+++  all_memory += sizeof (char *) * path_count;
+++
+++  path_count = 0;
+++  path_list_p = path_list;
+++  char const * next_path_list_p = 0;
+++  do
+++  {
+++    next_path_list_p = strchr (path_list_p, split_char);
+++    if (next_path_list_p != NULL)
+++    {
+++      ++next_path_list_p;
+++    }
+++    size_t this_size = (next_path_list_p != NULL)
+++                       ? next_path_list_p - path_list_p - 1
+++                       : &path_list[path_list_size] - path_list_p;
+++    memcpy (all_memory, path_list_p, this_size);
+++    all_memory[this_size] = '\0';
+++    (*arr)[path_count++] = all_memory;
+++    all_memory += this_size + 1;
+++  } while ((path_list_p = next_path_list_p) != NULL);
+++
+++  return path_count;
+++}
+++
+++char *
+++get_relocated_path_list(char const * from, char const * to_path_list)
+++{
+++  char exe_path[MAX_PATH];
+++  char * temp;
+++  get_executable_path (NULL, &exe_path[0], sizeof (exe_path) / sizeof (exe_path[0]));
+++  if ((temp = strrchr (exe_path, '/')) != NULL)
+++  {
+++    temp[1] = '\0';
+++  }
+++
+++  char **arr = NULL;
+++  /* Ask Alexey why he added this. Are we not 100% sure
+++     that we're dealing with unix paths here? */
+++  char split_char = ':';
+++  if (strchr (to_path_list, ';'))
+++  {
+++    split_char = ';';
+++  }
+++  size_t count = split_path_list (to_path_list, split_char, &arr);
+++  int result_size = 1 + (count - 1); /* count - 1 is for ; delim. */
+++  size_t exe_path_size = strlen (exe_path);
+++  size_t i;
+++  /* Space required is:
+++     count * (exe_path_size + strlen (rel_to_datadir))
+++     rel_to_datadir upper bound is:
+++     (count * strlen (from)) + (3 * num_slashes (from))
+++     + strlen(arr[i]) + 1.
+++     .. pathalogically num_slashes (from) is strlen (from)
+++     (from = ////////) */
+++  size_t space_required = (count * (exe_path_size + 4 * strlen (from))) + count - 1;
+++  for (i = 0; i < count; ++i)
+++  {
+++    space_required += strlen (arr[i]);
+++  }
+++  char * scratch = (char *) alloca (space_required);
+++  if (scratch == NULL)
+++    return NULL;
+++  for (i = 0; i < count; ++i)
+++  {
+++    char * rel_to_datadir = get_relative_path (from, arr[i]);
+++    scratch[0] = '\0';
+++    arr[i] = scratch;
+++    strcat (scratch, exe_path);
+++    strcat (scratch, rel_to_datadir);
+++    simplify_path (arr[i]);
+++    size_t arr_i_size = strlen (arr[i]);
+++    result_size += arr_i_size;
+++    scratch = arr[i] + arr_i_size + 1;
+++  }
+++  char * result = (char *) malloc (result_size);
+++  if (result == NULL)
+++  {
+++    return NULL;
+++  }
+++  result[0] = '\0';
+++  for (i = 0; i < count; ++i)
+++  {
+++    strcat (result, arr[i]);
+++    if (i != count-1)
+++    {
+++#if defined(_WIN32)
+++      strcat (result, ";");
+++#else
+++      strcat (result, ":");
+++#endif
+++    }
+++  }
+++  free ((void*)arr);
+++  return result;
+++}
++--- crypto/x509/x509_def.c.orig
+++++ crypto/x509/x509_def.c
++@@ -9,27 +9,42 @@
++ 
++ #include <stdio.h>
++ #include "internal/cryptlib.h"
+++#include "pathtools.h"
++ #include <openssl/crypto.h>
++ #include <openssl/x509.h>
++ 
+++char * openssl_relocation(const char *path)
+++{
+++  char exe_path[PATH_MAX];
+++  get_executable_path (NULL, &exe_path[0], sizeof(exe_path)/sizeof(exe_path[0]));
+++  if (strrchr (exe_path, '/') != NULL)
+++  {
+++     strrchr (exe_path, '/')[1] = '\0';
+++  }
+++  char * rel_to_datadir = get_relative_path (OPENSSLBIN, path);
+++  strcat (exe_path, rel_to_datadir);
+++  simplify_path (&exe_path[0]);
+++  return malloc_copy_string(exe_path);
+++}
+++
++ const char *X509_get_default_private_dir(void)
++ {
++-    return X509_PRIVATE_DIR;
+++    return openssl_relocation(X509_PRIVATE_DIR);
 + }
-+ #endif
 + 
-++#pragma pop_macro("abort")
++ const char *X509_get_default_cert_area(void)
++ {
++-    return X509_CERT_AREA;
+++    return openssl_relocation(X509_CERT_AREA);
++ }
++ 
++ const char *X509_get_default_cert_dir(void)
++ {
++-    return X509_CERT_DIR;
+++    return openssl_relocation(X509_CERT_DIR);
++ }
++ 
++ const char *X509_get_default_cert_file(void)
++ {
++-    return X509_CERT_FILE;
+++    return openssl_relocation(X509_CERT_FILE);
++ }
++ 
++ const char *X509_get_default_cert_dir_env(void)
++--- /dev/null
+++++ pathtools.h
++@@ -0,0 +1,49 @@
+++/*
+++      .Some useful path tools.
+++        .ASCII only for now.
+++   .Written by Ray Donnelly in 2014.
+++   .Licensed under CC0 (and anything.
+++  .else you need to license it under).
+++      .No warranties whatsoever.
+++  .email: <mingw.android@gmail.com>.
+++ */
 ++
-+ #endif /* __msxml_h__ */
+++#ifndef PATHTOOLS_H
+++#define PATHTOOLS_H
+++
+++#include <unistd.h>
+++#if defined(__APPLE__)
+++#include <stdlib.h>
+++#else
+++#include <malloc.h>
+++#endif
+++#include <stdio.h>
+++
+++char * malloc_copy_string(char const * original);
+++
+++/* In-place replaces any '\' with '/' and any '//' with '/' */
+++void sanitise_path(char * path);
+++
+++/* Uses a host OS specific function to determine the path of the executable,
+++   if IMPLEMENT_SYS_GET_EXECUTABLE_PATH is defined, otherwise uses argv0. */
+++int get_executable_path(char const * argv0, char * result, ssize_t max_size);
+++
+++/* Where possible, in-place removes occourances of '.' and 'path/..' */
+++void simplify_path(char * path);
+++
+++/* Allocates (via malloc) and returns the path to get from from to to. */
+++char * get_relative_path(char const * from, char const * to);
+++
+++size_t split_path_list(char const * path_list, char split_char, char *** arr);
+++
+++/* Advances path along by the amount that removes n prefix folders. */
+++char const *
+++strip_n_prefix_folders(char const * path, size_t n);
+++
+++/* NULL terminates path to remove n suffix folders. */
+++void
+++strip_n_suffix_folders(char * path, size_t n);
+++
+++char * get_relocated_path_list(char const * from, char const * to_path_list);
+++
+++#endif /* PATHTOOLS_H */
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
-index a243eaa..bc6ba89 100644
+index e403301..4be5e54 100644
 --- a/scripts/bzip2.sh
 +++ b/scripts/bzip2.sh
 @@ -35,7 +35,7 @@
@@ -104,10 +743,10 @@ index a243eaa..bc6ba89 100644
  
  #
 diff --git a/scripts/gcc-12-branch.sh b/scripts/gcc-12-branch.sh
-index f8e1eb2..7fd6d38 100644
+index d6832e1..abacaa9 100644
 --- a/scripts/gcc-12-branch.sh
 +++ b/scripts/gcc-12-branch.sh
-@@ -108,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -118,10 +757,18 @@ index f8e1eb2..7fd6d38 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index f0f3992..fd32906 100644
+index beea1f4..e4391f3 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
-@@ -108,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -62,6 +62,7 @@ PKG_PATCHES=(
+ 	gcc/gcc-libgomp-ftime64.patch
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
++    gcc/gcc-12-replace-abort-with-fancy_abort.patch
+ )
+ 
+ #
+@@ -108,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -132,10 +779,10 @@ index f0f3992..fd32906 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index 1377495..63e5e49 100644
+index a87c931..eeca0fa 100644
 --- a/scripts/gcc-trunk.sh
 +++ b/scripts/gcc-trunk.sh
-@@ -108,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -146,7 +793,7 @@ index 1377495..63e5e49 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index af075f7..5002ac4 100644
+index fb79b96..3580d17 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -158,8 +805,19 @@ index af075f7..5002ac4 100644
  PKG_NAME=gdb-${PKG_VERSION}
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
+@@ -81,8 +81,8 @@ PKG_CONFIGURE_FLAGS=(
+ 	--disable-gdbtk
+ 	#
+ 	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
+-	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
+-	CXXFLAGS="\"$COMMON_CXXFLAGS -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
++	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
++	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
+ 	CPPFLAGS="\"$COMMON_CPPFLAGS\""
+ 	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
+ )
 diff --git a/scripts/libffi.sh b/scripts/libffi.sh
-index 5daff81..c4f9774 100644
+index 8d4445a..bc57b83 100644
 --- a/scripts/libffi.sh
 +++ b/scripts/libffi.sh
 @@ -35,21 +35,19 @@
@@ -188,7 +846,7 @@ index 5daff81..c4f9774 100644
  #
  
 diff --git a/scripts/mingw-compress.sh b/scripts/mingw-compress.sh
-index 493fb5d..6df6225 100644
+index 5fea105..1ff7114 100644
 --- a/scripts/mingw-compress.sh
 +++ b/scripts/mingw-compress.sh
 @@ -67,7 +67,7 @@ function func_compress_mingw() {
@@ -200,23 +858,8 @@ index 493fb5d..6df6225 100644
  				"$ARCHIVE_NAME" "$PREFIX" >/dev/null 2>&1 \
  			)
  			[[ $? == 0 ]] && {
-diff --git a/scripts/mingw-w64-api.sh b/scripts/mingw-w64-api.sh
-index 6f34e62..6aef0cb 100644
---- a/scripts/mingw-w64-api.sh
-+++ b/scripts/mingw-w64-api.sh
-@@ -47,7 +47,9 @@ PKG_PRIORITY=runtime
- 
- #
- 
--PKG_PATCHES=()
-+PKG_PATCHES=(
-+	mingw-w64/push-abort-macro.patch
-+)
- 
- #
- 
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index d2ad09f..664c41d 100644
+index f2cc819..381fa99 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -224,12 +867,28 @@ index d2ad09f..664c41d 100644
  # **************************************************************************
  
 -PKG_VERSION=1.1.1k
-+PKG_VERSION=1.1.1s
++PKG_VERSION=3.0.8
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
+@@ -50,13 +50,14 @@ PKG_CONFIGURE_SCRIPT=Configure
+ #
+ 
+ PKG_PATCHES=(
+-	openssl/openssl-1.1.1-relocation.patch
++	openssl/openssl-3.0.8-relocation.patch
+ )
+ 
+ #
+ 
+ PKG_CONFIGURE_FLAGS=(
+ 	--prefix=$LIBS_DIR
++	--libdir=$LIBS_DIR/lib
+ 	--openssldir=$LIBS_DIR/ssl
+ 	#
+ 	shared
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 3d93bc9..a6bcb7b 100644
+index 58c0605..7d0fedb 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -264,7 +923,7 @@ index 3d93bc9..a6bcb7b 100644
  
  #
 diff --git a/scripts/readline.sh b/scripts/readline.sh
-index 6f7e561..f3a0fb1 100644
+index 111bc32..fdfcec3 100644
 --- a/scripts/readline.sh
 +++ b/scripts/readline.sh
 @@ -35,7 +35,7 @@
@@ -286,7 +945,7 @@ index 6f7e561..f3a0fb1 100644
  )
  
 diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
-index 9a5fda0..aa7f23d 100644
+index 4233f82..203b58f 100644
 --- a/scripts/sqlite.sh
 +++ b/scripts/sqlite.sh
 @@ -35,12 +35,12 @@
@@ -305,7 +964,7 @@ index 9a5fda0..aa7f23d 100644
  PKG_PRIORITY=extra
  
 diff --git a/scripts/tcl.sh b/scripts/tcl.sh
-index af05ccc..d20f9b4 100644
+index b3cc678..6e7db6d 100644
 --- a/scripts/tcl.sh
 +++ b/scripts/tcl.sh
 @@ -35,7 +35,7 @@
@@ -318,7 +977,7 @@ index af05ccc..d20f9b4 100644
  PKG_DIR_NAME=tcl${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/tests.sh b/scripts/tests.sh
-index 7668844..3cddb8a 100644
+index 0d1e249..6d50b91 100644
 --- a/scripts/tests.sh
 +++ b/scripts/tests.sh
 @@ -81,15 +81,15 @@ lasterror_test2_list=(
@@ -344,7 +1003,7 @@ index 7668844..3cddb8a 100644
  [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 && `echo $BUILD_VERSION | cut -d. -f2` -le 6 ]] && (
  	sleep_test_list=(
 diff --git a/scripts/tk.sh b/scripts/tk.sh
-index d8e7194..40eb3f4 100644
+index 457bfd1..ac151e2 100644
 --- a/scripts/tk.sh
 +++ b/scripts/tk.sh
 @@ -35,7 +35,7 @@
@@ -357,7 +1016,7 @@ index d8e7194..40eb3f4 100644
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index 92bb22a..91e10d7 100644
+index ad25a1d..417070d 100644
 --- a/scripts/xz-utils.sh
 +++ b/scripts/xz-utils.sh
 @@ -35,7 +35,7 @@
@@ -370,7 +1029,7 @@ index 92bb22a..91e10d7 100644
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz
 diff --git a/scripts/zlib.sh b/scripts/zlib.sh
-index 836a757..c330a9b 100644
+index 505b5e6..f184a49 100644
 --- a/scripts/zlib.sh
 +++ b/scripts/zlib.sh
 @@ -40,7 +40,7 @@ PKG_NAME=$PKG_ARCHITECTURE-zlib-${PKG_VERSION}-$LINK_TYPE_SUFFIX
