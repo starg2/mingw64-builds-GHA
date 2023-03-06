@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index d7e2b49..5cc8d29 100755
+index 0b5159e..208c066 100755
 --- a/build
 +++ b/build
-@@ -319,7 +319,7 @@ while [[ $# > 0 ]]; do
+@@ -309,7 +309,7 @@ while [[ $# > 0 ]]; do
                      RUNTIME_BRANCH="v10.x"
                  ;;
  				trunk)
@@ -12,19 +12,20 @@ index d7e2b49..5cc8d29 100755
  				;;
  				v3.3.0)
 diff --git a/library/config-win.sh b/library/config-win.sh
-index 4f9a8f0..9afae30 100644
+index 4f9a8f0..4580e81 100644
 --- a/library/config-win.sh
 +++ b/library/config-win.sh
-@@ -101,6 +101,7 @@ function func_test_installed_packages {
+@@ -101,6 +101,8 @@ function func_test_installed_packages {
  		texinfo
  		autogen
  		dejagnu
 +		pkgconf
++		dos2unix
  	)
  
  	echo "--> installing required packages..."
 diff --git a/library/config.sh b/library/config.sh
-index e32f5c7..ec5f6d2 100644
+index 3e88101..2594666 100644
 --- a/library/config.sh
 +++ b/library/config.sh
 @@ -190,10 +190,10 @@ esac
@@ -54,6 +55,292 @@ index 8ef7751..e3d3284 100644
  					$_url -O $_lib_name > $_log_name 2>&1
  				_result=$?
  			}
+diff --git a/patches/binutils/0110-binutils-mingw-gnu-print.patch b/patches/binutils/0110-binutils-mingw-gnu-print.patch
+index 91dcd7e..2adda2a 100644
+--- a/patches/binutils/0110-binutils-mingw-gnu-print.patch
++++ b/patches/binutils/0110-binutils-mingw-gnu-print.patch
+@@ -1,19 +1,8 @@
+-diff -urN binutils-2.38.orig/binutils/dwarf.c binutils-2.38/binutils/dwarf.c
+---- binutils-2.38.orig/binutils/dwarf.c	2022-01-22 13:14:07.000000000 +0100
+-+++ binutils-2.38/binutils/dwarf.c	2022-04-01 16:20:13.920951900 +0200
+-@@ -218,7 +218,7 @@
+- }
+- 
+- #if SIZEOF_LONG_LONG > SIZEOF_LONG
+--# ifndef __MINGW32__
+-+# if !defined(__MSVCRT__) || defined(__USE_MINGW_ANSI_STDIO)
+- #  define DWARF_VMA_FMT		"ll"
+- #  define DWARF_VMA_FMT_LONG	"%16.16llx"
+- # else
+-diff -urN binutils-2.38.orig/binutils/strings.c binutils-2.38/binutils/strings.c
+---- binutils-2.38.orig/binutils/strings.c	2022-01-22 13:14:07.000000000 +0100
+-+++ binutils-2.38/binutils/strings.c	2022-04-01 16:23:19.687330400 +0200
+-@@ -617,7 +617,7 @@
++diff --git a/binutils/strings.c b/binutils/strings.c
++index 44a8e1da644..4010829dc49 100644
++--- a/binutils/strings.c
+++++ b/binutils/strings.c
++@@ -617,7 +617,7 @@ print_filename_and_address (const char * filename, file_ptr address)
+      case 8:
+        if (sizeof (address) > sizeof (long))
+  	{
+@@ -22,7 +11,7 @@ diff -urN binutils-2.38.orig/binutils/strings.c binutils-2.38/binutils/strings.c
+  	  printf ("%7llo ", (unsigned long long) address);
+  #else
+  	  printf ("%7I64o ", (unsigned long long) address);
+-@@ -630,7 +630,7 @@
++@@ -630,7 +630,7 @@ print_filename_and_address (const char * filename, file_ptr address)
+      case 10:
+        if (sizeof (address) > sizeof (long))
+  	{
+@@ -31,7 +20,7 @@ diff -urN binutils-2.38.orig/binutils/strings.c binutils-2.38/binutils/strings.c
+  	  printf ("%7llu ", (unsigned long long) address);
+  #else
+  	  printf ("%7I64d ", (unsigned long long) address);
+-@@ -643,7 +643,7 @@
++@@ -643,7 +643,7 @@ print_filename_and_address (const char * filename, file_ptr address)
+      case 16:
+        if (sizeof (address) > sizeof (long))
+  	{
+@@ -40,10 +29,11 @@ diff -urN binutils-2.38.orig/binutils/strings.c binutils-2.38/binutils/strings.c
+  	  printf ("%7llx ", (unsigned long long) address);
+  #else
+  	  printf ("%7I64x ", (unsigned long long) address);
+-diff -urN binutils-2.38.orig/gas/as.h binutils-2.38/gas/as.h
+---- binutils-2.38.orig/gas/as.h	2022-01-22 13:14:08.000000000 +0100
+-+++ binutils-2.38/gas/as.h	2022-04-01 16:24:32.374816400 +0200
+-@@ -413,10 +413,10 @@
++diff --git a/gas/as.h b/gas/as.h
++index 14a768f8889..b1f056f115a 100644
++--- a/gas/as.h
+++++ b/gas/as.h
++@@ -433,14 +433,14 @@ typedef struct _pseudo_type pseudo_typeS;
+  
+  #define PRINTF_LIKE(FCN) \
+    void FCN (const char *format, ...) \
+@@ -53,13 +43,19 @@ diff -urN binutils-2.38.orig/gas/as.h binutils-2.38/gas/as.h
+    void FCN (const char *file, unsigned int line, const char *format, ...) \
+ -    __attribute__ ((__format__ (__printf__, 3, 4)))
+ +    __attribute__ ((__format__ (gnu_printf, 3, 4)))
++ #define PRINTF_INDENT_LIKE(FCN) \
++   void FCN (const char *file, unsigned int line, unsigned int indent, \
++ 	    const char *format, ...) \
++-    __attribute__ ((__format__ (__printf__, 4, 5)))
+++    __attribute__ ((__format__ (gnu_printf, 4, 5)))
+  
+  #else /* __GNUC__ < 2 || defined(VMS) */
+  
+-diff -urN binutils-2.38.orig/gold/configure binutils-2.38/gold/configure
+---- binutils-2.38.orig/gold/configure	2022-01-22 13:25:13.000000000 +0100
+-+++ binutils-2.38/gold/configure	2022-04-01 16:25:19.092799300 +0200
+-@@ -10204,7 +10204,7 @@
++diff --git a/gold/configure b/gold/configure
++index b9f062b68eb..fde982191c5 100755
++--- a/gold/configure
+++++ b/gold/configure
++@@ -10204,7 +10204,7 @@ else
+  /* end confdefs.h.  */
+  
+  template<typename T> extern void foo(const char*, ...)
+@@ -68,10 +64,11 @@ diff -urN binutils-2.38.orig/gold/configure binutils-2.38/gold/configure
+  template<typename T> void foo(const char* format, ...) {}
+  void bar() { foo<int>("%s\n", "foo"); }
+  
+-diff -urN binutils-2.38.orig/gold/configure.ac binutils-2.38/gold/configure.ac
+---- binutils-2.38.orig/gold/configure.ac	2022-01-22 13:14:09.000000000 +0100
+-+++ binutils-2.38/gold/configure.ac	2022-04-01 16:25:56.733450400 +0200
+-@@ -679,7 +679,7 @@
++diff --git a/gold/configure.ac b/gold/configure.ac
++index 1716a779416..cae29866f38 100644
++--- a/gold/configure.ac
+++++ b/gold/configure.ac
++@@ -679,7 +679,7 @@ AC_CACHE_CHECK([whether we can use attributes with template functions],
+  [gold_cv_template_attribute],
+  [AC_COMPILE_IFELSE([AC_LANG_SOURCE([
+  template<typename T> extern void foo(const char*, ...)
+@@ -80,10 +77,11 @@ diff -urN binutils-2.38.orig/gold/configure.ac binutils-2.38/gold/configure.ac
+  template<typename T> void foo(const char* format, ...) {}
+  void bar() { foo<int>("%s\n", "foo"); }
+  ])], [gold_cv_template_attribute=yes], [gold_cv_template_attribute=no])])
+-diff -urN binutils-2.38.orig/include/ansidecl.h binutils-2.38/include/ansidecl.h
+---- binutils-2.38.orig/include/ansidecl.h	2022-01-22 13:14:09.000000000 +0100
+-+++ binutils-2.38/include/ansidecl.h	2022-04-01 16:26:58.905567000 +0200
+-@@ -195,7 +195,7 @@
++diff --git a/include/ansidecl.h b/include/ansidecl.h
++index 0515228f325..7c2b9f18306 100644
++--- a/include/ansidecl.h
+++++ b/include/ansidecl.h
++@@ -195,7 +195,7 @@ So instead we use the macro below and test it against specific values.  */
+     before GCC 3.3, but as of 3.3 we need to add the `nonnull'
+     attribute to retain this behavior.  */
+  #ifndef ATTRIBUTE_PRINTF
+@@ -92,7 +90,7 @@ diff -urN binutils-2.38.orig/include/ansidecl.h binutils-2.38/include/ansidecl.h
+  #define ATTRIBUTE_PRINTF_1 ATTRIBUTE_PRINTF(1, 2)
+  #define ATTRIBUTE_PRINTF_2 ATTRIBUTE_PRINTF(2, 3)
+  #define ATTRIBUTE_PRINTF_3 ATTRIBUTE_PRINTF(3, 4)
+-@@ -223,7 +223,7 @@
++@@ -223,7 +223,7 @@ So instead we use the macro below and test it against specific values.  */
+     NULL format specifier was allowed as of gcc 3.3.  */
+  #ifndef ATTRIBUTE_NULL_PRINTF
+  # if (GCC_VERSION >= 3003)
+@@ -101,3 +99,5 @@ diff -urN binutils-2.38.orig/include/ansidecl.h binutils-2.38/include/ansidecl.h
+  # else
+  #  define ATTRIBUTE_NULL_PRINTF(m, n)
+  # endif /* GNUC >= 3.3 */
++-- 
++2.32.0
+diff --git a/patches/binutils/3001-try-fix-compare_section-abort.patch b/patches/binutils/3001-try-fix-compare_section-abort.patch
+new file mode 100644
+index 0000000..c621865
+--- /dev/null
++++ b/patches/binutils/3001-try-fix-compare_section-abort.patch
+@@ -0,0 +1,13 @@
++diff --git a/ld/ldlang.c b/ld/ldlang.c
++index b66d8c6bc1d..a909c71e771 100644
++--- a/ld/ldlang.c
+++++ b/ld/ldlang.c
++@@ -649,7 +649,7 @@ wild_sort (lang_wild_statement_type *wild,
++ 	 looking at the sections for this file.  */
++ 
++       /* Find the correct node to append this section.  */
++-      if (compare_section (sec->spec.sorted, section, (*tree)->section) < 0)
+++      if (sec != NULL && sec->spec.sorted != none && sec->spec.sorted != by_none && compare_section (sec->spec.sorted, section, (*tree)->section) < 0)
++ 	tree = &((*tree)->left);
++       else
++ 	tree = &((*tree)->right);
+diff --git a/patches/make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch b/patches/make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
+new file mode 100644
+index 0000000..8d31d86
+--- /dev/null
++++ b/patches/make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
+@@ -0,0 +1,11 @@
++--- a/src/config.h.W32
+++++ b/src/config.h.W32
++@@ -348,7 +348,7 @@
++ /* Define to 1 if `d_type' is a member of `struct dirent'. */
++ /* SV 57152: MinGW64 version of dirent doesn't support d_type. */
++-#ifndef __MINGW64__
+++#ifndef __MINGW32__
++ # define HAVE_STRUCT_DIRENT_D_TYPE 1
++ #endif
++ 
++ /* Define to 1 if 'n_un.n_name' is a member of 'struct nlist'. */
+diff --git a/patches/make/make-4.4-timestamps.patch b/patches/make/make-4.4-timestamps.patch
+new file mode 100644
+index 0000000..8558c2d
+--- /dev/null
++++ b/patches/make/make-4.4-timestamps.patch
+@@ -0,0 +1,37 @@
++From 1f542f915d6a3f8a69a4acae94b01185df7ee2a6 Mon Sep 17 00:00:00 2001
++From: Orgad Shaneh <orgads@gmail.com>
++Date: Wed, 2 Nov 2022 18:23:57 +0200
++Subject: [PATCH] Fix reading file timestamp as 64-bit on MinGW32
++
++Commit 01142a53c9d (Add support for intmax_t) added support for 64-bit
++time_t by defining __MINGW_USE_VC2005_COMPAT. But this only works with
++_stat64 as expected. When stat is used on 32-bit systems, it returns a
++bad timestamp (for example, 72586185920376753).
++
++This triggers the following errors every time make is executed:
++mingw32-make: Warning: File 'Makefile' has modification time 7.3e+16 s in the future
++mingw32-make: warning:  Clock skew detected.  Your build may be incomplete.
++
++and of course, dependencies are completely broken.
++
++Fix by enabling _stat64 also for MinGW.
++---
++ src/remake.c | 2 +-
++ 1 file changed, 1 insertion(+), 1 deletion(-)
++
++diff --git a/src/remake.c b/src/remake.c
++index 4ce3d2a3..83b0b79d 100644
++--- a/src/remake.c
+++++ b/src/remake.c
++@@ -37,7 +37,7 @@ this program.  If not, see <https://www.gnu.org/licenses/>.  */
++ #include <windows.h>
++ #include <io.h>
++ #include <sys/stat.h>
++-#if defined(_MSC_VER) && _MSC_VER > 1200
+++#if defined(__MINGW32__) || (defined(_MSC_VER) && _MSC_VER > 1200)
++ /* VC7 or later supprots _stat64 to access 64-bit file size. */
++ #define STAT _stat64
++ #else
++-- 
++2.38.1.windows.1.1.gfa087c7d8f
++
+diff --git a/patches/make/make-getopt.patch b/patches/make/make-getopt.patch
+index ad01dae..b81a8fd 100644
+--- a/patches/make/make-getopt.patch
++++ b/patches/make/make-getopt.patch
+@@ -11,8 +11,8 @@ Index: getopt.c
+ RCS file: /sources/make/make/getopt.c,v
+ retrieving revision 1.22
+ diff -u -p -r1.22 getopt.c
+---- make-3.82.orig/getopt.c	25 Oct 2009 18:56:45 -0000	1.22
+-+++ make-3.82/getopt.c	5 Jul 2010 20:05:22 -0000
++--- make-3.82.orig/src/getopt.c	25 Oct 2009 18:56:45 -0000	1.22
+++++ make-3.82/src/getopt.c	5 Jul 2010 20:05:22 -0000
+ @@ -436,6 +436,9 @@ _getopt_initialize (int argc, char *cons
+      }
+    else
+diff --git a/patches/make/make-linebuf-mingw.patch b/patches/make/make-linebuf-mingw.patch
+index ce93fa0..cbce4ed 100644
+--- a/patches/make/make-linebuf-mingw.patch
++++ b/patches/make/make-linebuf-mingw.patch
+@@ -1,5 +1,5 @@
+---- make.orig/main.c
+-+++ make/main.c
++--- make.orig/src/main.c
+++++ make/src/main.c
+ @@ -971,8 +971,11 @@
+  
+  #endif
+diff --git a/patches/ncurses/ncurses-6.3-cflags-private.patch b/patches/ncurses/ncurses-6.3-cflags-private.patch
+new file mode 100644
+index 0000000..84c0379
+--- /dev/null
++++ b/patches/ncurses/ncurses-6.3-cflags-private.patch
+@@ -0,0 +1,10 @@
++--- ncurses-6.3/misc/gen-pkgconfig.in.orig	2022-04-29 20:19:42.668758200 +0200
+++++ ncurses-6.3/misc/gen-pkgconfig.in	2022-04-29 20:27:10.636256800 +0200
++@@ -238,6 +238,7 @@
++ Libs: $lib_flags $LIBS
++ Libs.private: @LIBS@ $main_libs
++ Cflags: $CFLAGS
+++Cflags.private: -DNCURSES_STATIC
++ EOF
++ 
++ done
+diff --git a/patches/ncurses/ncurses-6.3-pkgconfig.patch b/patches/ncurses/ncurses-6.3-pkgconfig.patch
+new file mode 100644
+index 0000000..e3b5d46
+--- /dev/null
++++ b/patches/ncurses/ncurses-6.3-pkgconfig.patch
+@@ -0,0 +1,24 @@
++diff -ruN a/misc/gen-pkgconfig.in b/misc/gen-pkgconfig.in
++--- a/misc/gen-pkgconfig.in	2021-08-07 23:36:33.000000000 +0200
+++++ b/misc/gen-pkgconfig.in	2021-11-03 11:12:51.127160950 +0100
++@@ -83,7 +83,7 @@
++ fi
++ 
++ lib_flags=
++-for opt in -L$libdir @EXTRA_PKG_LDFLAGS@ @LIBS@
+++for opt in -L$libdir @LIBS@
++ do
++ 	case $opt in
++ 	-l*) # LIBS is handled specially below
++diff -ruN a/misc/ncurses-config.in b/misc/ncurses-config.in
++--- a/misc/ncurses-config.in	2021-08-07 23:36:14.000000000 +0200
+++++ b/misc/ncurses-config.in	2021-11-03 11:26:12.393533954 +0100
++@@ -101,7 +101,7 @@
++ # There is no portable way to find the list of standard library directories.
++ # Require a POSIX shell anyway, to keep this simple.
++ lib_flags=
++-for opt in -L$libdir @EXTRA_PKG_LDFLAGS@ $LIBS
+++for opt in -L$libdir $LIBS
++ do
++ 	case $opt in
++ 	-specs*) # ignore linker specs-files which were used to build library
 diff --git a/patches/openssl/openssl-3.0.8-relocation.patch b/patches/openssl/openssl-3.0.8-relocation.patch
 new file mode 100644
 index 0000000..68b276c
@@ -718,6 +1005,45 @@ index 0000000..68b276c
 ++char * get_relocated_path_list(char const * from, char const * to_path_list);
 ++
 ++#endif /* PATHTOOLS_H */
+diff --git a/scripts/3rdparty-post.sh b/scripts/3rdparty-post.sh
+index 7d50443..1716fe1 100644
+--- a/scripts/3rdparty-post.sh
++++ b/scripts/3rdparty-post.sh
+@@ -63,10 +63,10 @@ function python_deps_post {
+ 	}
+ 
+ 	rm -f $LIBS_DIR/bin/{bz*,bunzip2}
+-	rm -f $LIBS_DIR/bin/{tclsh.exe,tclsh86.exe,openssl.exe,capinfo.exe,captoinfo.exe,clear.exe,idle,infocmp.exe}
+-	rm -f $LIBS_DIR/bin/{infotocap.exe,c_rehash,ncursesw5-config,reset.exe,sqlite3.exe,tabs.exe}
+-	rm -f $LIBS_DIR/bin/{tic.exe,toe.exe,tput.exe,tset.exe,wish.exe,wish86.exe,xmlwf,testgdbm.exe}
++	rm -f $LIBS_DIR/bin/{tclsh.exe,tclsh86.exe,openssl.exe,capinfo.exe,idle,c_rehash,ncursesw5-config,sqlite3.exe}
++	rm -f $LIBS_DIR/bin/{wish.exe,wish86.exe,xmlwf,testgdbm.exe}
+ 	rm -f $LIBS_DIR/bin/{lzmadec.exe,lzmainfo.exe,unxz.exe,xz*}
++	rm -f $LIBS_DIR/bin/*-w64-mingw32-{captoinfo.exe,clear.exe,infocmp.exe,infotocap.exe,reset.exe,tabs.exe,tic.exe,toe.exe,tput.exe,tset.exe}
+ 
+ 	#rm -rf $LIBS_DIR/include
+ 	rm -rf $LIBS_DIR/lib/pkgconfig
+diff --git a/scripts/binutils.sh b/scripts/binutils.sh
+index 6c9ad44..ad89f76 100644
+--- a/scripts/binutils.sh
++++ b/scripts/binutils.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=2.39
++PKG_VERSION=2.40
+ PKG_NAME=binutils-${PKG_VERSION}
+ [[ $USE_MULTILIB == yes ]] && {
+ 	PKG_NAME=$BUILD_ARCHITECTURE-$PKG_NAME-multi
+@@ -59,6 +59,7 @@ PKG_PATCHES=(
+ 	binutils/0009-fix-libiberty-configure.mingw.patch
+ 	binutils/0022-libiberty-missing-typedef.patch
+ 	binutils/0110-binutils-mingw-gnu-print.patch
++	binutils/3001-try-fix-compare_section-abort.patch
+ )
+ 
+ #
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index e403301..4be5e54 100644
 --- a/scripts/bzip2.sh
@@ -779,10 +1105,10 @@ index beea1f4..e4391f3 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index a87c931..eeca0fa 100644
+index f583d0e..c25834d 100644
 --- a/scripts/gcc-trunk.sh
 +++ b/scripts/gcc-trunk.sh
-@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
+@@ -107,6 +107,9 @@ PKG_CONFIGURE_FLAGS=(
  		&& echo "--enable-sjlj-exceptions" \
  	)
  	#
@@ -793,7 +1119,7 @@ index a87c931..eeca0fa 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index fb79b96..3580d17 100644
+index fb79b96..23e9c7a 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -805,14 +1131,15 @@ index fb79b96..3580d17 100644
  PKG_NAME=gdb-${PKG_VERSION}
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
-@@ -81,8 +81,8 @@ PKG_CONFIGURE_FLAGS=(
+@@ -80,9 +80,8 @@ PKG_CONFIGURE_FLAGS=(
+ 	--enable-tui
  	--disable-gdbtk
  	#
- 	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
+-	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
 -	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
 -	CXXFLAGS="\"$COMMON_CXXFLAGS -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
-+	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
-+	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
++	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -DNCURSES_STATIC\""
++	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
  	CPPFLAGS="\"$COMMON_CPPFLAGS\""
  	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
  )
@@ -845,6 +1172,81 @@ index 8d4445a..bc57b83 100644
  
  #
  
+diff --git a/scripts/make.sh b/scripts/make.sh
+index 90a22f8..259b73e 100644
+--- a/scripts/make.sh
++++ b/scripts/make.sh
+@@ -35,10 +35,10 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=4.2.1
++PKG_VERSION=4.4
+ PKG_NAME=make-${PKG_VERSION}
+ PKG_DIR_NAME=make-${PKG_VERSION}
+-PKG_TYPE=.tar.bz2
++PKG_TYPE=.tar.gz
+ PKG_URLS=(
+ 	"https://ftp.gnu.org/gnu/make/make-${PKG_VERSION}${PKG_TYPE}"
+ )
+@@ -53,33 +53,41 @@ PKG_PRIORITY=main
+ PKG_PATCHES=(
+ 	make/make-linebuf-mingw.patch
+ 	make/make-getopt.patch
++	make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
++	make/make-4.4-timestamps.patch
+ )
+ 
+ #
+ 
+-PKG_CONFIGURE_FLAGS=(
+-	--host=$HOST
+-	--build=$TARGET
+-	--prefix=$PREFIX
+-	--program-prefix=mingw32-
+-	--enable-job-server
+-	--without-guile
+-	CFLAGS="\"$COMMON_CFLAGS\""
+-	LDFLAGS="\"$COMMON_LDFLAGS -L$LIBS_DIR/lib\""
++PKG_EXECUTE_AFTER_PATCH=(
++	"sed 's/^set MAKE=gnumake/set MAKE=mingw32-make/' build_w32.bat > build_w32-mingw.bat"
++	"unix2dos build_w32-mingw.bat"
+ )
+ 
+ #
+ 
+-PKG_MAKE_FLAGS=(
+-	-j$JOBS
+-	all
+-)
++PKG_MAKE_PROG=build_make_bat
++PKG_MAKE_FLAGS=( dummy )
+ 
+ #
+ 
+-PKG_INSTALL_FLAGS=(
+-	-j$JOBS
+-	$( [[ $STRIP_ON_INSTALL == yes ]] && echo install-strip || echo install )
++PKG_EXECUTE_AFTER_INSTALL=(
++	install_make
+ )
+ 
++#
++
++function build_make_bat {
++	cp -rf $SRCS_DIR/$PKG_NAME $CURR_BUILD_DIR/
++	cmd //c build_w32-mingw.bat --without-guile gcc
++}
++
++function install_make {
++	[[ $STRIP_ON_INSTALL == yes ]] && {
++		strip -s GccRel/mingw32-make.exe -o $PREFIX/bin/mingw32-make.exe
++	} || {
++		cp -f GccRel/mingw32-make.exe $PREFIX/bin/mingw32-make.exe
++	}
++}
++
+ # **************************************************************************
 diff --git a/scripts/mingw-compress.sh b/scripts/mingw-compress.sh
 index 5fea105..1ff7114 100644
 --- a/scripts/mingw-compress.sh
@@ -858,6 +1260,54 @@ index 5fea105..1ff7114 100644
  				"$ARCHIVE_NAME" "$PREFIX" >/dev/null 2>&1 \
  			)
  			[[ $? == 0 ]] && {
+diff --git a/scripts/mpc.sh b/scripts/mpc.sh
+index 0eb6419..3594359 100644
+--- a/scripts/mpc.sh
++++ b/scripts/mpc.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.2.1
++PKG_VERSION=1.3.1
+ PKG_NAME=$BUILD_ARCHITECTURE-mpc-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=mpc-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+diff --git a/scripts/mpfr.sh b/scripts/mpfr.sh
+index 519e0c9..7e3ae8b 100644
+--- a/scripts/mpfr.sh
++++ b/scripts/mpfr.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=4.1.0
++PKG_VERSION=4.2.0
+ PKG_NAME=$BUILD_ARCHITECTURE-mpfr-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=mpfr-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
+diff --git a/scripts/ncurses.sh b/scripts/ncurses.sh
+index 02b4d44..f9f7f47 100644
+--- a/scripts/ncurses.sh
++++ b/scripts/ncurses.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=6.2
++PKG_VERSION=6.4
+ PKG_NAME=ncurses-${PKG_VERSION}
+ PKG_DIR_NAME=ncurses-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
+@@ -49,6 +49,8 @@ PKG_PRIORITY=extra
+ 
+ PKG_PATCHES=(
+ 	ncurses/work_around_changed_output_of_GNU_cpp_5.x.patch
++	ncurses/ncurses-6.3-pkgconfig.patch
++	ncurses/ncurses-6.3-cflags-private.patch
+ )
+ 
+ #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
 index f2cc819..381fa99 100644
 --- a/scripts/openssl.sh
@@ -888,7 +1338,7 @@ index f2cc819..381fa99 100644
  	#
  	shared
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..7d0fedb 100644
+index 58c0605..6730bbd 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -896,7 +1346,7 @@ index 58c0605..7d0fedb 100644
  # **************************************************************************
  
 -PKG_VERSION=3.9.10
-+PKG_VERSION=3.10.9
++PKG_VERSION=3.10.10
  PKG_NAME=Python-${PKG_VERSION}
  PKG_DIR_NAME=Python-${PKG_VERSION}
  PKG_TYPE=git
@@ -905,7 +1355,7 @@ index 58c0605..7d0fedb 100644
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard 101c2b0778f1a02169d7d649511e7b75fb93fbfa" # Reset to this commit hash for reproducible builds
++	"git reset --hard 3c09cdbdf8b14f2fb8da7fb460fd5cc663f5d492" # Reset to this commit hash for reproducible builds
  )
  
  #
@@ -914,8 +1364,9 @@ index 58c0605..7d0fedb 100644
  	--enable-optimizations
  	#
 -	LIBFFI_INCLUDEDIR="$LIBSW_DIR/lib/libffi-$LIBFFI_VERSION/include"
+-	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1\""
 +	PKG_CONFIG_PATH="$PREREQ_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib/pkgconfig:$LIBS_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
- 	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1\""
++	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
  	CPPFLAGS="\"$COMMON_CPPFLAGS $MY_CPPFLAGS\""
  	LDFLAGS="\"$COMMON_LDFLAGS -L$PREREQW_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib -L$LIBSW_DIR/lib\""
 +	LIBS="\"-lffi -lole32 -loleaut32 -luuid\""
@@ -945,7 +1396,7 @@ index 111bc32..fdfcec3 100644
  )
  
 diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
-index 4233f82..203b58f 100644
+index 4233f82..5a0deec 100644
 --- a/scripts/sqlite.sh
 +++ b/scripts/sqlite.sh
 @@ -35,12 +35,12 @@
@@ -953,7 +1404,7 @@ index 4233f82..203b58f 100644
  # **************************************************************************
  
 -PKG_VERSION=3350500
-+PKG_VERSION=3380500
++PKG_VERSION=3400100
  PKG_NAME=sqlite-${PKG_VERSION}
  PKG_DIR_NAME=sqlite-autoconf-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -976,32 +1427,6 @@ index b3cc678..6e7db6d 100644
  PKG_NAME=tcl${PKG_VERSION}
  PKG_DIR_NAME=tcl${PKG_VERSION}
  PKG_SUBDIR_NAME=win
-diff --git a/scripts/tests.sh b/scripts/tests.sh
-index 0d1e249..6d50b91 100644
---- a/scripts/tests.sh
-+++ b/scripts/tests.sh
-@@ -81,15 +81,15 @@ lasterror_test2_list=(
- 	"lasterror_test2.cpp -o lasterror_test2.exe"
- )
- 
--[[ $MSVCRT_VERSION == ucrt ]] && (
--	time_test_list=(
--		"time_test.c -lpthread -lucrt -o time_test.exe"
--	)
--) || (
-+#[[ $MSVCRT_VERSION == ucrt ]] && (
-+#	time_test_list=(
-+#		"time_test.c -lpthread -lucrt -o time_test.exe"
-+#	)
-+#) || (
- 	time_test_list=(
- 		"time_test.c -lpthread -o time_test.exe"
- 	)
--)
-+#)
- 
- [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 && `echo $BUILD_VERSION | cut -d. -f2` -le 6 ]] && (
- 	sleep_test_list=(
 diff --git a/scripts/tk.sh b/scripts/tk.sh
 index 457bfd1..ac151e2 100644
 --- a/scripts/tk.sh
@@ -1016,7 +1441,7 @@ index 457bfd1..ac151e2 100644
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index ad25a1d..417070d 100644
+index ad25a1d..5026746 100644
 --- a/scripts/xz-utils.sh
 +++ b/scripts/xz-utils.sh
 @@ -35,7 +35,7 @@
@@ -1024,7 +1449,7 @@ index ad25a1d..417070d 100644
  # **************************************************************************
  
 -PKG_VERSION=5.2.5
-+PKG_VERSION=5.2.7
++PKG_VERSION=5.4.1
  PKG_NAME=xz-${PKG_VERSION}
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz

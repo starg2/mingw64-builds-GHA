@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index 5cc8d29..198dc93 100755
+index 208c066..f9f8b4d 100755
 --- a/build
 +++ b/build
 @@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
@@ -11,7 +11,7 @@ index 5cc8d29..198dc93 100755
  	echo "    --static-gcc               - build static GCC"
  	echo "    --with-default-msvcrt=     - specifies msvc version the toolchain will target"
  	echo "                                 <msvcrt|msvcr80|msvcr90|msvcr100|msvcr110|msvcr120|ucrt>"
-@@ -371,10 +371,10 @@ while [[ $# > 0 ]]; do
+@@ -361,10 +361,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
  			case $THREADS_MODEL in
@@ -24,7 +24,7 @@ index 5cc8d29..198dc93 100755
  				;;
  			esac
  		;;
-@@ -650,6 +650,10 @@ case $BUILD_ARCHITECTURE in
+@@ -648,6 +648,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  
@@ -4607,7 +4607,7 @@ index 0000000..2bae7b3
 + expf
 + fabs
 diff --git a/scripts/3rdparty-post.sh b/scripts/3rdparty-post.sh
-index 7d50443..24da07c 100644
+index 1716fe1..b27b26b 100644
 --- a/scripts/3rdparty-post.sh
 +++ b/scripts/3rdparty-post.sh
 @@ -55,6 +55,7 @@ function python_deps_post {
@@ -4976,22 +4976,22 @@ index 3b4b1bd..c541435 100644
  	[[ $GCC_DEPS_LINK_TYPE == *--enable-shared* ]] && {
  		cp -fv $PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX/bin/*.dll $PREFIX/bin/
 diff --git a/scripts/tests.sh b/scripts/tests.sh
-index 6d50b91..20e2bbc 100644
+index 8fdd9a4..ea6897b 100644
 --- a/scripts/tests.sh
 +++ b/scripts/tests.sh
-@@ -117,12 +117,12 @@ declare -A PKG_TESTS
+@@ -119,12 +119,12 @@ declare -A PKG_TESTS
  PKG_TESTS["dll_test1"]=dll_test1_list[@]
  PKG_TESTS["dll_test2"]=dll_test2_list[@]
  [[ "$DISABLE_GCC_LTO" != yes ]] && { PKG_TESTS["lto_test"]=lto_test_list[@]; }
 -PKG_TESTS["omp_test"]=omp_test_list[@]
-+[[ $THREADS_MODEL != mcf ]] && { PKG_TESTS["omp_test"]=omp_test_list[@]; }
++[[ $THREADS_MODEL != mcf ]] && { PKG_TESTS["omp_test"]=omp_test_list[@] }
  PKG_TESTS["pthread_test"]=pthread_test_list[@]
--[[ $THREADS_MODEL == posix ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }
-+[[ $THREADS_MODEL != win32 ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }
+-[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL == posix ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }
++[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL != win32 ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }
  PKG_TESTS["lasterror_test1"]=lasterror_test1_list[@]
  PKG_TESTS["lasterror_test2"]=lasterror_test2_list[@]
  PKG_TESTS["time_test"]=time_test_list[@]
--[[ $THREADS_MODEL == posix ]] && { PKG_TESTS["sleep_test"]=sleep_test_list[@]; }
-+[[ $THREADS_MODEL != win32 ]] && { PKG_TESTS["sleep_test"]=sleep_test_list[@]; }
- [[ `echo $BUILD_VERSION | cut -d. -f1` -ge 6 ]] && { PKG_TESTS["random_device"]=random_device_list[@]; }
- [[ `echo $BUILD_VERSION | cut -d. -f1` -ge 8 ]] && { PKG_TESTS["filesystem"]=filesystem_list[@]; }
+-[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL == posix ]] && { PKG_TESTS["sleep_test"]=sleep_test_list[@]; }
++[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL != win32 ]] && { PKG_TESTS["sleep_test"]=sleep_test_list[@]; }
+ [[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 6 ]] && { PKG_TESTS["random_device"]=random_device_list[@]; }
+ [[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 8 ]] && { PKG_TESTS["filesystem"]=filesystem_list[@]; }
