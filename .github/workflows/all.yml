@@ -60,6 +60,7 @@ jobs:
             autogen
             dejagnu
             pkgconf
+            dos2unix
 
       - name: Change autocrlf
         run: git config --global core.autocrlf input
