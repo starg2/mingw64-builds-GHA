@@ -76,7 +76,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: niXman/mingw-builds
-          ref: 36482a3d0b3b5c57d70b12044d3cc236b3660eb7
+          ref: 16928ba0afc726eacd3621b67f11283e056759e2
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
@@ -94,12 +94,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: D:/toolchains/mingw32
-          key: v2023-01-16/mingw32-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
+          key: v2023-03-19/mingw32-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
 
       - name: Install toolchain (x86)
         if: ${{ (matrix.arch == 'i686' || matrix.exceptions == 'sjlj') && steps.cache-toolchain-mingw32.outputs.cache-hit != 'true' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-01-16/gcc-12.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-03-19/gcc-12.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
           7z e gcc-12.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip i686-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v11.7z
           7z x i686-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v11.7z -o/d/toolchains
 
@@ -109,12 +109,12 @@ jobs:
         uses: actions/cache@v3
         with:
           path: D:/toolchains/mingw64
-          key: v2023-01-16/mingw64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
+          key: v2023-03-19/mingw64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
 
       - name: Install toolchain (x64)
         if: ${{ (matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj') && steps.cache-toolchain-mingw64.outputs.cache-hit != 'true' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-01-16/gcc-12.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-03-19/gcc-12.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
           7z e gcc-12.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip x86_64-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v11.7z
           7z x x86_64-12.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v11.7z -o/d/toolchains
 
