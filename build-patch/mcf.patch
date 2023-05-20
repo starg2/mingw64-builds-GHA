@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index 208c066..f9f8b4d 100755
+index f5e1e22..fb63c04 100755
 --- a/build
 +++ b/build
 @@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
@@ -11,7 +11,7 @@ index 208c066..f9f8b4d 100755
  	echo "    --static-gcc               - build static GCC"
  	echo "    --with-default-msvcrt=     - specifies msvc version the toolchain will target"
  	echo "                                 <msvcrt|msvcr80|msvcr90|msvcr100|msvcr110|msvcr120|ucrt>"
-@@ -361,10 +361,10 @@ while [[ $# > 0 ]]; do
+@@ -372,10 +372,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
  			case $THREADS_MODEL in
@@ -24,7 +24,7 @@ index 208c066..f9f8b4d 100755
  				;;
  			esac
  		;;
-@@ -648,6 +648,10 @@ case $BUILD_ARCHITECTURE in
+@@ -659,6 +659,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  
@@ -2530,6 +2530,37 @@ index 0000000..927c829
 +-- 
 +2.39.0
 +
+diff --git a/patches/mingw-w64/mcfgthread-fix-_amsg_exit.patch b/patches/mingw-w64/mcfgthread-fix-_amsg_exit.patch
+new file mode 100644
+index 0000000..b1b4603
+--- /dev/null
++++ b/patches/mingw-w64/mcfgthread-fix-_amsg_exit.patch
+@@ -0,0 +1,25 @@
++--- a/mingw-w64-crt/crt/ucrtbase_compat.c
+++++ b/mingw-w64-crt/crt/ucrtbase_compat.c
++@@ -23,6 +23,10 @@
++ #include <time.h>
++ #include <corecrt_startup.h>
++ 
+++#ifdef __USING_MCFGTHREAD__
+++#include <mcfgthread/exit.h>
+++#endif
+++
++ #undef __getmainargs
++ #undef __wgetmainargs
++ #undef _amsg_exit
++@@ -107,7 +111,11 @@
++ 
++ void __cdecl _amsg_exit(int ret) {
++   fprintf(stderr, "runtime error %d\n", ret);
+++#ifdef __USING_MCFGTHREAD__
+++  __MCF__Exit(255);
+++#else
++   _exit(255);
+++#endif  // __USING_MCFGTHREAD__
++ }
++ 
++ unsigned int __cdecl _get_output_format(void)
 diff --git a/patches/mingw-w64/mcfgthread-mingw-w64-10.0.patch b/patches/mingw-w64/mcfgthread-mingw-w64-10.0.patch
 new file mode 100644
 index 0000000..b169c69
@@ -4656,6 +4687,25 @@ index e4391f3..0c28c21 100644
  )
  
  #
+diff --git a/scripts/gcc-12.3.0.sh b/scripts/gcc-12.3.0.sh
+index 2909603..955bd2b 100644
+--- a/scripts/gcc-12.3.0.sh
++++ b/scripts/gcc-12.3.0.sh
+@@ -57,12 +57,13 @@ PKG_PATCHES=(
+ 	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
+ 	gcc/gcc-12-fix-mingw-pch.patch
+ 	gcc/gcc-5-dwarf-regression.patch
+-	gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
++	#gcc/gcc-5.1.0-fix-libatomic-building-for-threads=win32.patch
+ 	gcc/gcc-12-ktietz-libgomp.patch
+ 	gcc/gcc-libgomp-ftime64.patch
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
+ 	gcc/gcc-12-replace-abort-with-fancy_abort.patch
++	$( [[ $THREADS_MODEL == mcf ]] && echo "gcc/mcfgthread-gcc-11.patch" )
+ )
+ 
+ #
 diff --git a/scripts/licenses.sh b/scripts/licenses.sh
 index 91cce62..c6c740c 100644
 --- a/scripts/licenses.sh
@@ -4670,10 +4720,10 @@ index 91cce62..c6c740c 100644
  		binutils
 diff --git a/scripts/mcfgthread.sh b/scripts/mcfgthread.sh
 new file mode 100644
-index 0000000..2fe4871
+index 0000000..c527486
 --- /dev/null
 +++ b/scripts/mcfgthread.sh
-@@ -0,0 +1,94 @@
+@@ -0,0 +1,100 @@
 +
 +#
 +# The BSD 3-Clause License. http://www.opensource.org/licenses/BSD-3-Clause
@@ -4711,7 +4761,7 @@ index 0000000..2fe4871
 +
 +# **************************************************************************
 +
-+PKG_VERSION=1.4
++PKG_VERSION=1.5
 +PKG_NAME=$PKG_ARCHITECTURE-mcfgthread-${PKG_VERSION}
 +PKG_DIR_NAME=mcfgthread-${PKG_VERSION}
 +PKG_TYPE=git
@@ -4720,6 +4770,12 @@ index 0000000..2fe4871
 +)
 +
 +PKG_PRIORITY=prereq
++
++#
++
++PKG_EXECUTE_AFTER_UNCOMPRESS=(
++	"git reset --hard 1428e4d04a75177ad1d1ffbfc7448cac10fe8c64" # Reset to this commit hash for reproducible builds
++)
 +
 +#
 +
@@ -4797,7 +4853,7 @@ index dea9e2e..f8a3214 100644
  
  PKG_CONFIGURE_FLAGS=(
 diff --git a/scripts/mingw-w64-crt.sh b/scripts/mingw-w64-crt.sh
-index c6bfc70..e862054 100644
+index c6bfc70..50b9adc 100644
 --- a/scripts/mingw-w64-crt.sh
 +++ b/scripts/mingw-w64-crt.sh
 @@ -39,9 +39,9 @@ PKG_NAME=mingw-w64-crt-${RUNTIME_VERSION}
@@ -4812,7 +4868,7 @@ index c6bfc70..e862054 100644
  }
  
  PKG_PRIORITY=runtime
-@@ -55,15 +55,30 @@ PKG_PATCHES=(
+@@ -55,15 +55,31 @@ PKG_PATCHES=(
  		    echo "mingw-w64/bceadc54d8f32b3f14c69074892e2718eac08e3b.patch"
  		}
  	)
@@ -4821,6 +4877,7 @@ index c6bfc70..e862054 100644
 +			echo "mingw-w64/9001-crt-Mark-atexit-as-DATA-because-it-s-always-overridd.patch"
 +			echo "mingw-w64/9002-crt-Provide-wrappers-for-exit-in-libmingwex.patch"
 +			echo "mingw-w64/9003-crt-Implement-standard-conforming-termination-suppor.patch"
++			echo "mingw-w64/mcfgthread-fix-_amsg_exit.patch"
 +		} || {
 +			echo "mingw-w64/mcfgthread-mingw-w64-10.0.patch"
 +		}
@@ -4845,7 +4902,7 @@ index c6bfc70..e862054 100644
  	[[ $BUILD_ARCHITECTURE == i686 ]] && {
  		LIBCONF="--enable-lib32 --disable-lib64"
  	} || {
-@@ -71,6 +86,14 @@ PKG_PATCHES=(
+@@ -71,6 +87,14 @@ PKG_PATCHES=(
  	}
  }
  
@@ -4860,7 +4917,7 @@ index c6bfc70..e862054 100644
  PKG_CONFIGURE_FLAGS=(
  	--host=$HOST
  	--build=$BUILD
-@@ -85,7 +108,7 @@ PKG_CONFIGURE_FLAGS=(
+@@ -85,7 +109,7 @@ PKG_CONFIGURE_FLAGS=(
  	#
  	CFLAGS="\"$COMMON_CFLAGS\""
  	CXXFLAGS="\"$COMMON_CXXFLAGS\""
@@ -4870,7 +4927,7 @@ index c6bfc70..e862054 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..a0590e3 100644
+index 9c49fcb..c46a4d0 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@
@@ -4976,7 +5033,7 @@ index 3b4b1bd..c541435 100644
  	[[ $GCC_DEPS_LINK_TYPE == *--enable-shared* ]] && {
  		cp -fv $PREREQ_DIR/$HOST-$LINK_TYPE_SUFFIX/bin/*.dll $PREFIX/bin/
 diff --git a/scripts/tests.sh b/scripts/tests.sh
-index 8fdd9a4..ea6897b 100644
+index 8fdd9a4..8c353f6 100644
 --- a/scripts/tests.sh
 +++ b/scripts/tests.sh
 @@ -119,12 +119,12 @@ declare -A PKG_TESTS
@@ -4984,7 +5041,7 @@ index 8fdd9a4..ea6897b 100644
  PKG_TESTS["dll_test2"]=dll_test2_list[@]
  [[ "$DISABLE_GCC_LTO" != yes ]] && { PKG_TESTS["lto_test"]=lto_test_list[@]; }
 -PKG_TESTS["omp_test"]=omp_test_list[@]
-+[[ $THREADS_MODEL != mcf ]] && { PKG_TESTS["omp_test"]=omp_test_list[@] }
++[[ $THREADS_MODEL != mcf ]] && { PKG_TESTS["omp_test"]=omp_test_list[@]; }
  PKG_TESTS["pthread_test"]=pthread_test_list[@]
 -[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL == posix ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }
 +[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` -ge 13 || $THREADS_MODEL != win32 ]] && { PKG_TESTS["stdthread_test"]=stdthread_test_list[@]; }

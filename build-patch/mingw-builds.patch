@@ -1,16 +1,3 @@
-diff --git a/build b/build
-index 0b5159e..208c066 100755
---- a/build
-+++ b/build
-@@ -309,7 +309,7 @@ while [[ $# > 0 ]]; do
-                     RUNTIME_BRANCH="v10.x"
-                 ;;
- 				trunk)
--					RUNTIME_VERSION=v9
-+					RUNTIME_VERSION=v11
- 					RUNTIME_BRANCH="master"
- 				;;
- 				v3.3.0)
 diff --git a/library/config-win.sh b/library/config-win.sh
 index 4f9a8f0..4580e81 100644
 --- a/library/config-win.sh
@@ -25,9 +12,18 @@ index 4f9a8f0..4580e81 100644
  
  	echo "--> installing required packages..."
 diff --git a/library/config.sh b/library/config.sh
-index 3e88101..2594666 100644
+index bcd89a3..c7f98af 100644
 --- a/library/config.sh
 +++ b/library/config.sh
+@@ -111,7 +111,7 @@ FETCH_MODE=no
+ UPDATE_SOURCES=no
+ BUILD_ARCHITECTURE=
+ EXCEPTIONS_MODEL=
+-USE_MULTILIB=no
++USE_MULTILIB=yes
+ STRIP_ON_INSTALL=yes
+ BOOTSTRAPING=yes
+ BOOTSTRAPINGALL=no
 @@ -190,10 +190,10 @@ esac
  
  # **************************************************************************
@@ -208,6 +204,177 @@ index 0000000..c621865
 + 	tree = &((*tree)->left);
 +       else
 + 	tree = &((*tree)->right);
+diff --git a/patches/gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch b/patches/gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
+new file mode 100644
+index 0000000..43648ad
+--- /dev/null
++++ b/patches/gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
+@@ -0,0 +1,55 @@
++From c7c22c10118d9f738ce60c97675def01c5e2d33d Mon Sep 17 00:00:00 2001
++From: Thomas Neumann <tneumann@users.sourceforge.net>
++Date: Wed, 10 May 2023 12:33:49 +0200
++Subject: [PATCH] fix radix sort on 32bit platforms [PR109670]
++
++The radix sort uses two buffers, a1 for input and a2 for output.
++After every digit the role of the two buffers is swapped.
++When terminating the sort early the code made sure the output
++was in a2.  However, when we run out of bits, as can happen on
++32bit platforms, the sorted result was in a1, was we had just
++swapped a1 and a2.
++This patch fixes the problem by unconditionally having a1 as
++output after every loop iteration.
++
++This bug manifested itself only on 32bit platforms and even then
++only in some circumstances, as it needs frames where a swap
++is required due to differences in the top-most byte, which is
++affected by ASLR. The new logic was validated by exhaustive
++search over 32bit input values.
++
++libgcc/ChangeLog:
++        * unwind-dw2-fde.c: Fix radix sort buffer management.
++---
++ libgcc/unwind-dw2-fde.c | 8 +++-----
++ 1 file changed, 3 insertions(+), 5 deletions(-)
++
++diff --git a/libgcc/unwind-dw2-fde.c b/libgcc/unwind-dw2-fde.c
++index 7b74c391ced..31a3834156b 100644
++--- a/libgcc/unwind-dw2-fde.c
+++++ b/libgcc/unwind-dw2-fde.c
++@@ -624,8 +624,6 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
++       // Stop if we are already sorted.
++       if (!violations)
++ 	{
++-	  // The sorted data is in a1 now.
++-	  a2 = a1;
++ 	  break;
++ 	}
++ 
++@@ -660,9 +658,9 @@ fde_radixsort (struct object *ob, fde_extractor_t fde_extractor,
++ #undef FANOUT
++ #undef FANOUTBITS
++ 
++-  // The data is in a2 now, move in place if needed.
++-  if (a2 != v1->array)
++-    memcpy (v1->array, a2, sizeof (const fde *) * n);
+++  // The data is in a1 now, move in place if needed.
+++  if (a1 != v1->array)
+++    memcpy (v1->array, a1, sizeof (const fde *) * n);
++ }
++ 
++ static inline void
++-- 
++2.39.2
++
+diff --git a/patches/gdb/gdb-fix-using-gnu-print.patch b/patches/gdb/gdb-fix-using-gnu-print.patch
+index b32bb8d..a7d573d 100644
+--- a/patches/gdb/gdb-fix-using-gnu-print.patch
++++ b/patches/gdb/gdb-fix-using-gnu-print.patch
+@@ -1,43 +1,15 @@
+-From 23c68472557842b9c2706ba25d28711db3241081 Mon Sep 17 00:00:00 2001
++From 9c62d820184b60748d002b4874b87e4b38d6a461 Mon Sep 17 00:00:00 2001
+ From: Orgad Shaneh <orgads@gmail.com>
+ Date: Thu, 13 Feb 2020 09:25:02 +0200
+-Subject: [PATCH] Fix using gnu print
++Subject: [PATCH 2/5] Fix using gnu print
+ 
+ ---
+- bfd/bfd-in.h                | 2 +-
+- bfd/bfd-in2.h               | 2 +-
+- gdb/gdbsupport/format.h     | 6 +++++-
++ gdbsupport/format.h         | 6 +++++-
+  gnulib/import/inttypes.in.h | 8 ++++----
+- 4 files changed, 11 insertions(+), 7 deletions(-)
++ 2 files changed, 9 insertions(+), 5 deletions(-)
+ 
+-diff --git a/bfd/bfd-in.h b/bfd/bfd-in.h
+-index d81cbb791f..6c14fc5da5 100644
+---- a/bfd/bfd-in.h
+-+++ b/bfd/bfd-in.h
+-@@ -158,7 +158,7 @@ typedef BFD_HOST_U_64_BIT symvalue;
+- 
+- #if BFD_HOST_64BIT_LONG
+- #define BFD_VMA_FMT "l"
+--#elif defined (__MSVCRT__)
+-+#elif defined(__MSVCRT__) && !defined( __USE_MINGW_ANSI_STDIO)
+- #define BFD_VMA_FMT "I64"
+- #else
+- #define BFD_VMA_FMT "ll"
+-diff --git a/bfd/bfd-in2.h b/bfd/bfd-in2.h
+-index 6f3e41da37..54e9c7a56d 100644
+---- a/bfd/bfd-in2.h
+-+++ b/bfd/bfd-in2.h
+-@@ -165,7 +165,7 @@ typedef BFD_HOST_U_64_BIT symvalue;
+- 
+- #if BFD_HOST_64BIT_LONG
+- #define BFD_VMA_FMT "l"
+--#elif defined (__MSVCRT__)
+-+#elif defined (__MSVCRT__) && !defined(__USE_MINGW_ANSI_STDIO)
+- #define BFD_VMA_FMT "I64"
+- #else
+- #define BFD_VMA_FMT "ll"
+-diff --git a/gdb/gdbsupport/format.h b/gdb/gdbsupport/format.h
+-index 80f012a41a..17a5560283 100644
++diff --git a/gdbsupport/format.h b/gdbsupport/format.h
++index 921fca5e04d..75d12ae531a 100644
+ --- a/gdbsupport/format.h
+ +++ b/gdbsupport/format.h
+ @@ -23,7 +23,11 @@
+@@ -54,45 +26,44 @@ index 80f012a41a..17a5560283 100644
+  #else
+  # define USE_PRINTF_I64 0
+ diff --git a/gnulib/import/inttypes.in.h b/gnulib/import/inttypes.in.h
+-index ed09db6e86..ae06fdedc8 100644
++index e9ee500e3e6..b1f1f7edd00 100644
+ --- a/gnulib/import/inttypes.in.h
+ +++ b/gnulib/import/inttypes.in.h
+-@@ -187,7 +187,7 @@
++@@ -171,7 +171,7 @@
+  #ifdef INT64_MAX
+  # if (@APPLE_UNIVERSAL_BUILD@ ? defined _LP64 : @INT64_MAX_EQ_LONG_MAX@)
+  #  define _PRI64_PREFIX "l"
+ -# elif defined _MSC_VER || defined __MINGW32__
+ +# elif (defined _MSC_VER || defined __MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO)
+  #  define _PRI64_PREFIX "I64"
+- # elif @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
++ # elif LONG_MAX >> 30 == 1
+  #  define _PRI64_PREFIX _LONG_LONG_FORMAT_PREFIX
+-@@ -204,7 +204,7 @@
++@@ -186,7 +186,7 @@
+  #ifdef UINT64_MAX
+  # if (@APPLE_UNIVERSAL_BUILD@ ? defined _LP64 : @UINT64_MAX_EQ_ULONG_MAX@)
+  #  define _PRIu64_PREFIX "l"
+ -# elif defined _MSC_VER || defined __MINGW32__
+ +# elif (defined _MSC_VER || defined __MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO)
+  #  define _PRIu64_PREFIX "I64"
+- # elif @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
++ # elif ULONG_MAX >> 31 == 1
+  #  define _PRIu64_PREFIX _LONG_LONG_FORMAT_PREFIX
+-@@ -680,7 +680,7 @@
++@@ -583,7 +583,7 @@
+  #ifdef INT64_MAX
+  # if (@APPLE_UNIVERSAL_BUILD@ ? defined _LP64 : @INT64_MAX_EQ_LONG_MAX@)
+  #  define _SCN64_PREFIX "l"
+ -# elif defined _MSC_VER || defined __MINGW32__
+ +# elif (defined _MSC_VER || defined __MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO)
+  #  define _SCN64_PREFIX "I64"
+- # elif @HAVE_LONG_LONG_INT@ && LONG_MAX >> 30 == 1
++ # elif LONG_MAX >> 30 == 1
+  #  define _SCN64_PREFIX _LONG_LONG_FORMAT_PREFIX
+-@@ -697,7 +697,7 @@
++@@ -598,7 +598,7 @@
+  #ifdef UINT64_MAX
+  # if (@APPLE_UNIVERSAL_BUILD@ ? defined _LP64 : @UINT64_MAX_EQ_ULONG_MAX@)
+  #  define _SCNu64_PREFIX "l"
+ -# elif defined _MSC_VER || defined __MINGW32__
+ +# elif (defined _MSC_VER || defined __MINGW32__) && !defined(__USE_MINGW_ANSI_STDIO)
+  #  define _SCNu64_PREFIX "I64"
+- # elif @HAVE_UNSIGNED_LONG_LONG_INT@ && ULONG_MAX >> 31 == 1
++ # elif ULONG_MAX >> 31 == 1
+  #  define _SCNu64_PREFIX _LONG_LONG_FORMAT_PREFIX
+ -- 
+-2.25.0.windows.1
+-
++2.33.1.windows.1
 diff --git a/patches/make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch b/patches/make/make-4.3_undef-HAVE_STRUCT_DIRENT_D_TYPE.patch
 new file mode 100644
 index 0000000..8d31d86
@@ -1104,6 +1271,56 @@ index beea1f4..e4391f3 100644
  	--disable-libstdcxx-pch
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
+diff --git a/scripts/gcc-12.3.0.sh b/scripts/gcc-12.3.0.sh
+index e1c5beb..2909603 100644
+--- a/scripts/gcc-12.3.0.sh
++++ b/scripts/gcc-12.3.0.sh
+@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
+ 		&& echo "--enable-sjlj-exceptions" \
+ 	)
+ 	#
++	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
++		&& echo "--disable-libssp" \
++	)
+ 	--disable-libstdcxx-pch
+ 	--disable-libstdcxx-debug
+ 	$( [[ $BOOTSTRAPING == yes ]] \
+diff --git a/scripts/gcc-13-branch.sh b/scripts/gcc-13-branch.sh
+index a77ce7a..12ebb72 100644
+--- a/scripts/gcc-13-branch.sh
++++ b/scripts/gcc-13-branch.sh
+@@ -107,6 +107,9 @@ PKG_CONFIGURE_FLAGS=(
+ 		&& echo "--enable-sjlj-exceptions" \
+ 	)
+ 	#
++	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
++		&& echo "--disable-libssp" \
++	)
+ 	--disable-libstdcxx-pch
+ 	--disable-libstdcxx-debug
+ 	$( [[ $BOOTSTRAPING == yes ]] \
+diff --git a/scripts/gcc-13.1.0.sh b/scripts/gcc-13.1.0.sh
+index 4488b84..e25c5ae 100644
+--- a/scripts/gcc-13.1.0.sh
++++ b/scripts/gcc-13.1.0.sh
+@@ -58,6 +58,7 @@ PKG_PATCHES=(
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
+     gcc/gcc-12-replace-abort-with-fancy_abort.patch
++    gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
+ )
+ 
+ #
+@@ -107,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
+ 		&& echo "--enable-sjlj-exceptions" \
+ 	)
+ 	#
++	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
++		&& echo "--disable-libssp" \
++	)
+ 	--disable-libstdcxx-pch
+ 	--disable-libstdcxx-debug
+ 	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
 index f583d0e..c25834d 100644
 --- a/scripts/gcc-trunk.sh
@@ -1119,7 +1336,7 @@ index f583d0e..c25834d 100644
  	--disable-libstdcxx-debug
  	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index fb79b96..23e9c7a 100644
+index fb79b96..790cc47 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -1127,19 +1344,18 @@ index fb79b96..23e9c7a 100644
  # **************************************************************************
  
 -PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 11.2; } )
-+PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 12.1; } )
++PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 13.1; } )
  PKG_NAME=gdb-${PKG_VERSION}
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
-@@ -80,9 +80,8 @@ PKG_CONFIGURE_FLAGS=(
- 	--enable-tui
+@@ -81,8 +81,8 @@ PKG_CONFIGURE_FLAGS=(
  	--disable-gdbtk
  	#
--	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
+ 	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
 -	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
 -	CXXFLAGS="\"$COMMON_CXXFLAGS -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
-+	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -DNCURSES_STATIC\""
-+	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
++	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -DNCURSES_STATIC -D_WIN32_WINNT=0x0601\""
++	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC -D_WIN32_WINNT=0x0601\""
  	CPPFLAGS="\"$COMMON_CPPFLAGS\""
  	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
  )
@@ -1260,6 +1476,22 @@ index 5fea105..1ff7114 100644
  				"$ARCHIVE_NAME" "$PREFIX" >/dev/null 2>&1 \
  			)
  			[[ $? == 0 ]] && {
+diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
+index 91c2d9a..9c49fcb 100644
+--- a/scripts/mingw-w64-download.sh
++++ b/scripts/mingw-w64-download.sh
+@@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
+ 	PKG_URLS=(
+ 		"https://git.code.sf.net/p/mingw-w64/mingw-w64|branch:$RUNTIME_BRANCH|repo:$PKG_TYPE"
+ 	)
++	[[ $RUNTIME_BRANCH == master ]] && {
++		PKG_EXECUTE_AFTER_UNCOMPRESS=(
++			"git reset --hard 569ad0d04563af9584663108d039a273c0cafb2a" # Reset to this commit hash for reproducible builds
++		)
++	}
+ }
+ 
+ PKG_DIR_NAME=mingw-w64${MINGW_PKG_DIR_VERSION_SUFFIX}
 diff --git a/scripts/mpc.sh b/scripts/mpc.sh
 index 0eb6419..3594359 100644
 --- a/scripts/mpc.sh
@@ -1309,7 +1541,7 @@ index 02b4d44..f9f7f47 100644
  
  #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index f2cc819..381fa99 100644
+index f2cc819..67e6755 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -1317,7 +1549,7 @@ index f2cc819..381fa99 100644
  # **************************************************************************
  
 -PKG_VERSION=1.1.1k
-+PKG_VERSION=3.0.8
++PKG_VERSION=3.1.0
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -1338,7 +1570,7 @@ index f2cc819..381fa99 100644
  	#
  	shared
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..6730bbd 100644
+index 58c0605..70ce174 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -1346,7 +1578,7 @@ index 58c0605..6730bbd 100644
  # **************************************************************************
  
 -PKG_VERSION=3.9.10
-+PKG_VERSION=3.10.10
++PKG_VERSION=3.10.11
  PKG_NAME=Python-${PKG_VERSION}
  PKG_DIR_NAME=Python-${PKG_VERSION}
  PKG_TYPE=git
@@ -1355,7 +1587,7 @@ index 58c0605..6730bbd 100644
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard 3c09cdbdf8b14f2fb8da7fb460fd5cc663f5d492" # Reset to this commit hash for reproducible builds
++	"git reset --hard bb0b6e3c0d52fe6d4b3bea482f00b070275ce57f" # Reset to this commit hash for reproducible builds
  )
  
  #
@@ -1396,7 +1628,7 @@ index 111bc32..fdfcec3 100644
  )
  
 diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
-index 4233f82..5a0deec 100644
+index 4233f82..e5f0248 100644
 --- a/scripts/sqlite.sh
 +++ b/scripts/sqlite.sh
 @@ -35,12 +35,12 @@
@@ -1404,13 +1636,13 @@ index 4233f82..5a0deec 100644
  # **************************************************************************
  
 -PKG_VERSION=3350500
-+PKG_VERSION=3400100
++PKG_VERSION=3410200
  PKG_NAME=sqlite-${PKG_VERSION}
  PKG_DIR_NAME=sqlite-autoconf-${PKG_VERSION}
  PKG_TYPE=.tar.gz
  PKG_URLS=(
 -	"https://www.sqlite.org/2021/sqlite-autoconf-${PKG_VERSION}${PKG_TYPE}"
-+	"https://www.sqlite.org/2022/sqlite-autoconf-${PKG_VERSION}${PKG_TYPE}"
++	"https://www.sqlite.org/2023/sqlite-autoconf-${PKG_VERSION}${PKG_TYPE}"
  )
  PKG_PRIORITY=extra
  
@@ -1441,7 +1673,7 @@ index 457bfd1..ac151e2 100644
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index ad25a1d..5026746 100644
+index ad25a1d..210449c 100644
 --- a/scripts/xz-utils.sh
 +++ b/scripts/xz-utils.sh
 @@ -35,7 +35,7 @@
@@ -1449,7 +1681,7 @@ index ad25a1d..5026746 100644
  # **************************************************************************
  
 -PKG_VERSION=5.2.5
-+PKG_VERSION=5.4.1
++PKG_VERSION=5.4.3
  PKG_NAME=xz-${PKG_VERSION}
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz
