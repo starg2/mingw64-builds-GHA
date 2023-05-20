@@ -1,8 +1,8 @@
 diff --git a/scripts/tests.sh b/scripts/tests.sh
-index 8fdd9a4..e49cb4f 100644
+index 8fdd9a4..c23839e 100644
 --- a/scripts/tests.sh
 +++ b/scripts/tests.sh
-@@ -83,15 +83,7 @@ lasterror_test2_list=(
+@@ -83,25 +83,9 @@ lasterror_test2_list=(
  	"lasterror_test2.cpp -o lasterror_test2.exe"
  )
  
@@ -17,5 +17,16 @@ index 8fdd9a4..e49cb4f 100644
 -}
 +time_test_list=()
  
- [[ `echo $TESTS_GCC_VERSION | cut -d. -f1` == 4 && `echo $TESTS_GCC_VERSION | cut -d. -f2` -le 6 ]] && {
- 	sleep_test_list=(
+-[[ `echo $TESTS_GCC_VERSION | cut -d. -f1` == 4 && `echo $TESTS_GCC_VERSION | cut -d. -f2` -le 6 ]] && {
+-	sleep_test_list=(
+-		"sleep_test.cpp -std=c++0x -o sleep_test.exe"
+-	)
+-} || {
+-	sleep_test_list=(
+-		"sleep_test.cpp -std=c++11 -o sleep_test.exe"
+-	)
+-}
++sleep_test_list=()
+ 
+ random_device_list=(
+ 	"random_device.cpp -std=c++11 -o random_device.exe"
