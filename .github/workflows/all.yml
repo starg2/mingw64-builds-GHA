@@ -90,11 +90,6 @@ jobs:
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/patch-isl.patch
         working-directory: mingw-builds
 
-      - name: Patch build scripts (skip-time_test.patch)
-        if: ${{ matrix.crt == 'ucrt' }}
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/skip-time_test.patch
-        working-directory: mingw-builds
-
       - name: Patch build scripts (mcf.patch)
         if: ${{ matrix.threading == 'mcf' }}
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
