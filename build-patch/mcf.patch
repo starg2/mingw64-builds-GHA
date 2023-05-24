@@ -4720,7 +4720,7 @@ index 91cce62..c6c740c 100644
  		binutils
 diff --git a/scripts/mcfgthread.sh b/scripts/mcfgthread.sh
 new file mode 100644
-index 0000000..c527486
+index 0000000..3359c09
 --- /dev/null
 +++ b/scripts/mcfgthread.sh
 @@ -0,0 +1,100 @@
@@ -4774,7 +4774,7 @@ index 0000000..c527486
 +#
 +
 +PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+	"git reset --hard 1428e4d04a75177ad1d1ffbfc7448cac10fe8c64" # Reset to this commit hash for reproducible builds
++	"git reset --hard 2022decaabd5ce25869bed5bef671632b44856f3" # Reset to this commit hash for reproducible builds
 +)
 +
 +#
@@ -4927,7 +4927,7 @@ index c6bfc70..50b9adc 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 9c49fcb..c46a4d0 100644
+index b35e6f8..e36f84a 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@

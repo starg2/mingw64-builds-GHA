@@ -1477,7 +1477,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..9c49fcb 100644
+index 91c2d9a..b35e6f8 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1486,7 +1486,7 @@ index 91c2d9a..9c49fcb 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 569ad0d04563af9584663108d039a273c0cafb2a" # Reset to this commit hash for reproducible builds
++			"git reset --hard 813b571407b1049a8f6edc87c0d69919775b21d4" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
