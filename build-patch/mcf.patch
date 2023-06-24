@@ -4669,7 +4669,7 @@ index abacaa9..597f422 100644
  
  #
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index e4391f3..0c28c21 100644
+index 79aa350..22e6437 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
 @@ -57,12 +57,13 @@ PKG_PATCHES=(
@@ -4688,7 +4688,7 @@ index e4391f3..0c28c21 100644
  
  #
 diff --git a/scripts/gcc-12.3.0.sh b/scripts/gcc-12.3.0.sh
-index 2909603..955bd2b 100644
+index dbe8901..982ded3 100644
 --- a/scripts/gcc-12.3.0.sh
 +++ b/scripts/gcc-12.3.0.sh
 @@ -57,12 +57,13 @@ PKG_PATCHES=(
@@ -4927,7 +4927,7 @@ index c6bfc70..50b9adc 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index b35e6f8..e36f84a 100644
+index 4843516..b737367 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@

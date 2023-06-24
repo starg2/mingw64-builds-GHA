@@ -1191,7 +1191,7 @@ index 7d50443..1716fe1 100644
  	#rm -rf $LIBS_DIR/include
  	rm -rf $LIBS_DIR/lib/pkgconfig
 diff --git a/scripts/binutils.sh b/scripts/binutils.sh
-index 6c9ad44..ad89f76 100644
+index 90c0913..4a5438c 100644
 --- a/scripts/binutils.sh
 +++ b/scripts/binutils.sh
 @@ -35,7 +35,7 @@
@@ -1235,22 +1235,8 @@ index e403301..4be5e54 100644
  )
  
  #
-diff --git a/scripts/gcc-12-branch.sh b/scripts/gcc-12-branch.sh
-index d6832e1..abacaa9 100644
---- a/scripts/gcc-12-branch.sh
-+++ b/scripts/gcc-12-branch.sh
-@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-12.2.0.sh b/scripts/gcc-12.2.0.sh
-index beea1f4..e4391f3 100644
+index 34f5e10..79aa350 100644
 --- a/scripts/gcc-12.2.0.sh
 +++ b/scripts/gcc-12.2.0.sh
 @@ -62,6 +62,7 @@ PKG_PATCHES=(
@@ -1261,46 +1247,8 @@ index beea1f4..e4391f3 100644
  )
  
  #
-@@ -108,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
-diff --git a/scripts/gcc-12.3.0.sh b/scripts/gcc-12.3.0.sh
-index e1c5beb..2909603 100644
---- a/scripts/gcc-12.3.0.sh
-+++ b/scripts/gcc-12.3.0.sh
-@@ -109,6 +109,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
-diff --git a/scripts/gcc-13-branch.sh b/scripts/gcc-13-branch.sh
-index a77ce7a..12ebb72 100644
---- a/scripts/gcc-13-branch.sh
-+++ b/scripts/gcc-13-branch.sh
-@@ -107,6 +107,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gcc-13.1.0.sh b/scripts/gcc-13.1.0.sh
-index 4488b84..e25c5ae 100644
+index ca2c736..7ba4c5c 100644
 --- a/scripts/gcc-13.1.0.sh
 +++ b/scripts/gcc-13.1.0.sh
 @@ -58,6 +58,7 @@ PKG_PATCHES=(
@@ -1311,32 +1259,8 @@ index 4488b84..e25c5ae 100644
  )
  
  #
-@@ -107,6 +108,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
-diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
-index f583d0e..c25834d 100644
---- a/scripts/gcc-trunk.sh
-+++ b/scripts/gcc-trunk.sh
-@@ -107,6 +107,9 @@ PKG_CONFIGURE_FLAGS=(
- 		&& echo "--enable-sjlj-exceptions" \
- 	)
- 	#
-+	$( [[ $RUNTIME_MAJOR_VERSION -ge 11 ]] \
-+		&& echo "--disable-libssp" \
-+	)
- 	--disable-libstdcxx-pch
- 	--disable-libstdcxx-debug
- 	$( [[ $BOOTSTRAPING == yes ]] \
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index fb79b96..790cc47 100644
+index c0bff32..abc2c50 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -1344,7 +1268,7 @@ index fb79b96..790cc47 100644
  # **************************************************************************
  
 -PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 11.2; } )
-+PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 13.1; } )
++PKG_VERSION=$( [[ `echo $BUILD_VERSION | cut -d. -f1` == 4 || `echo $BUILD_VERSION | cut -d. -f1` == 5 ]] && { echo 7.12; } || { echo 13.2; } )
  PKG_NAME=gdb-${PKG_VERSION}
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
@@ -1389,7 +1313,7 @@ index 8d4445a..bc57b83 100644
  #
  
 diff --git a/scripts/make.sh b/scripts/make.sh
-index 90a22f8..259b73e 100644
+index 5e5adac..351dbd4 100644
 --- a/scripts/make.sh
 +++ b/scripts/make.sh
 @@ -35,10 +35,10 @@
@@ -1403,7 +1327,7 @@ index 90a22f8..259b73e 100644
 -PKG_TYPE=.tar.bz2
 +PKG_TYPE=.tar.gz
  PKG_URLS=(
- 	"https://ftp.gnu.org/gnu/make/make-${PKG_VERSION}${PKG_TYPE}"
+ 	"https://ftpmirror.gnu.org/gnu/make/make-${PKG_VERSION}${PKG_TYPE}"
  )
 @@ -53,33 +53,41 @@ PKG_PRIORITY=main
  PKG_PATCHES=(
@@ -1477,7 +1401,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..b35e6f8 100644
+index 91c2d9a..4843516 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1486,14 +1410,14 @@ index 91c2d9a..b35e6f8 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 813b571407b1049a8f6edc87c0d69919775b21d4" # Reset to this commit hash for reproducible builds
++			"git reset --hard 9dfaba214c3a8bc7d8ecd1ad778f04f5c47d12e2" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
  
  PKG_DIR_NAME=mingw-w64${MINGW_PKG_DIR_VERSION_SUFFIX}
 diff --git a/scripts/mpc.sh b/scripts/mpc.sh
-index 0eb6419..3594359 100644
+index 78a0bea..6136abe 100644
 --- a/scripts/mpc.sh
 +++ b/scripts/mpc.sh
 @@ -35,7 +35,7 @@
@@ -1506,7 +1430,7 @@ index 0eb6419..3594359 100644
  PKG_DIR_NAME=mpc-${PKG_VERSION}
  PKG_TYPE=.tar.gz
 diff --git a/scripts/mpfr.sh b/scripts/mpfr.sh
-index 519e0c9..7e3ae8b 100644
+index 21bcf32..f24dea0 100644
 --- a/scripts/mpfr.sh
 +++ b/scripts/mpfr.sh
 @@ -35,7 +35,7 @@
@@ -1519,7 +1443,7 @@ index 519e0c9..7e3ae8b 100644
  PKG_DIR_NAME=mpfr-${PKG_VERSION}
  PKG_TYPE=.tar.xz
 diff --git a/scripts/ncurses.sh b/scripts/ncurses.sh
-index 02b4d44..f9f7f47 100644
+index 1cbca9d..b8b5867 100644
 --- a/scripts/ncurses.sh
 +++ b/scripts/ncurses.sh
 @@ -35,7 +35,7 @@
@@ -1541,7 +1465,7 @@ index 02b4d44..f9f7f47 100644
  
  #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index f2cc819..67e6755 100644
+index f2cc819..f6e577c 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -1549,7 +1473,7 @@ index f2cc819..67e6755 100644
  # **************************************************************************
  
 -PKG_VERSION=1.1.1k
-+PKG_VERSION=3.1.0
++PKG_VERSION=3.1.1
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -1570,7 +1494,7 @@ index f2cc819..67e6755 100644
  	#
  	shared
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..70ce174 100644
+index 58c0605..a499c06 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -1578,7 +1502,7 @@ index 58c0605..70ce174 100644
  # **************************************************************************
  
 -PKG_VERSION=3.9.10
-+PKG_VERSION=3.10.11
++PKG_VERSION=3.10.12
  PKG_NAME=Python-${PKG_VERSION}
  PKG_DIR_NAME=Python-${PKG_VERSION}
  PKG_TYPE=git
@@ -1587,7 +1511,7 @@ index 58c0605..70ce174 100644
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard bb0b6e3c0d52fe6d4b3bea482f00b070275ce57f" # Reset to this commit hash for reproducible builds
++	"git reset --hard 8ea5be64f2684431df3e0e79e0cf114cc1f48020" # Reset to this commit hash for reproducible builds
  )
  
  #
@@ -1606,7 +1530,7 @@ index 58c0605..70ce174 100644
  
  #
 diff --git a/scripts/readline.sh b/scripts/readline.sh
-index 111bc32..fdfcec3 100644
+index e7f1d90..f085019 100644
 --- a/scripts/readline.sh
 +++ b/scripts/readline.sh
 @@ -35,7 +35,7 @@
