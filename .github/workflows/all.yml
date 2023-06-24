@@ -78,8 +78,8 @@ jobs:
       - name: Get build scripts
         uses: actions/checkout@v3
         with:
-          repository: niXman/mingw-builds
-          ref: 16928ba0afc726eacd3621b67f11283e056759e2
+          repository: starg2/mingw-builds
+          ref: 0e1416ace26aac831a37821f6afea57244d33aba
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
