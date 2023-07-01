@@ -265,6 +265,67 @@ index 0000000..43648ad
 +-- 
 +2.39.2
 +
+diff --git a/patches/gcc/gcc-13.2.0-ktietz-libgomp.patch b/patches/gcc/gcc-13.2.0-ktietz-libgomp.patch
+new file mode 100644
+index 0000000..cb13df5
+--- /dev/null
++++ b/patches/gcc/gcc-13.2.0-ktietz-libgomp.patch
+@@ -0,0 +1,55 @@
++diff --git a/libgomp/team.c b/libgomp/team.c
++index 54dfca8080a..33d2e4388bd 100644
++--- a/libgomp/team.c
+++++ b/libgomp/team.c
++@@ -181,7 +181,7 @@ gomp_new_team (unsigned nthreads)
++       team = gomp_aligned_alloc (__alignof (struct gomp_team),
++ 				 sizeof (*team) + nthreads * extra);
++ #else
++-      team = team_malloc (sizeof (*team) + nthreads * extra);
+++      team = gomp_malloc_cleared (sizeof (*team) + nthreads * extra);
++ #endif
++ 
++ #ifndef HAVE_SYNC_BUILTINS
++@@ -1114,7 +1114,7 @@ struct gomp_task_icv *
++ gomp_new_icv (void)
++ {
++   struct gomp_thread *thr = gomp_thread ();
++-  struct gomp_task *task = gomp_malloc (sizeof (struct gomp_task));
+++  struct gomp_task *task = gomp_malloc_cleared (sizeof (struct gomp_task));
++   gomp_init_task (task, NULL, &gomp_global_icv);
++   thr->task = task;
++ #ifdef LIBGOMP_USE_PTHREADS
++diff --git a/libgomp/testsuite/config/default.exp b/libgomp/testsuite/config/default.exp
++index 01569e6ab62..c1ea978bd52 100644
++--- a/libgomp/testsuite/config/default.exp
+++++ b/libgomp/testsuite/config/default.exp
++@@ -13,3 +13,7 @@
++ # You should have received a copy of the GNU General Public License
++ # along with this program; see the file COPYING3.  If not see
++ # <http://www.gnu.org/licenses/>.
+++
+++# Support for old dejagnu.  Must be loaded here, not in libstdc++.exp, to
+++# make sure all existing procs are loaded when their presence is tested.
+++load_file $srcdir/../../gcc/testsuite/lib/dejapatches.exp
++diff --git a/libgomp/work.c b/libgomp/work.c
++index 99b79df76e9..f993d6e7a8d 100644
++--- a/libgomp/work.c
+++++ b/libgomp/work.c
++@@ -85,6 +85,7 @@ alloc_work_share (struct gomp_team *team)
++ #else
++   ws = gomp_malloc (team->work_share_chunk * sizeof (struct gomp_work_share));
++ #endif
+++  memset (ws, 0, team->work_share_chunk * sizeof (struct gomp_work_share));
++   ws->next_alloc = team->work_shares[0].next_alloc;
++   team->work_shares[0].next_alloc = ws;
++   team->work_share_list_alloc = &ws[1];
++@@ -197,7 +198,7 @@ gomp_work_share_start (size_t ordered)
++       ws = gomp_aligned_alloc (__alignof (struct gomp_work_share),
++ 			       sizeof (*ws));
++ #else
++-      ws = gomp_malloc (sizeof (*ws));
+++      ws = gomp_malloc_cleared (sizeof (*ws));
++ #endif
++       gomp_init_work_share (ws, ordered, 1);
++       thr->ts.work_share = ws;
 diff --git a/patches/gdb/gdb-fix-using-gnu-print.patch b/patches/gdb/gdb-fix-using-gnu-print.patch
 index b32bb8d..a7d573d 100644
 --- a/patches/gdb/gdb-fix-using-gnu-print.patch
@@ -1247,6 +1308,19 @@ index 34f5e10..79aa350 100644
  )
  
  #
+diff --git a/scripts/gcc-13-branch.sh b/scripts/gcc-13-branch.sh
+index 12ebb72..5be104c 100644
+--- a/scripts/gcc-13-branch.sh
++++ b/scripts/gcc-13-branch.sh
+@@ -53,7 +53,7 @@ PKG_PATCHES=(
+ 	gcc/gcc-12-fix-for-windows-not-minding-non-existant-parent-dirs.patch
+ 	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
+ 	gcc/gcc-5-dwarf-regression.patch
+-	gcc/gcc-12-ktietz-libgomp.patch
++	gcc/gcc-13.2.0-ktietz-libgomp.patch
+ 	gcc/gcc-libgomp-ftime64.patch
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
 diff --git a/scripts/gcc-13.1.0.sh b/scripts/gcc-13.1.0.sh
 index ca2c736..7ba4c5c 100644
 --- a/scripts/gcc-13.1.0.sh
@@ -1259,6 +1333,19 @@ index ca2c736..7ba4c5c 100644
  )
  
  #
+diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
+index c25834d..736355f 100644
+--- a/scripts/gcc-trunk.sh
++++ b/scripts/gcc-trunk.sh
+@@ -53,7 +53,7 @@ PKG_PATCHES=(
+ 	gcc/gcc-12-fix-for-windows-not-minding-non-existant-parent-dirs.patch
+ 	gcc/gcc-5.1.0-make-xmmintrin-header-cplusplus-compatible.patch
+ 	gcc/gcc-5-dwarf-regression.patch
+-	gcc/gcc-12-ktietz-libgomp.patch
++	gcc/gcc-13.2.0-ktietz-libgomp.patch
+ 	gcc/gcc-libgomp-ftime64.patch
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
 index c0bff32..abc2c50 100644
 --- a/scripts/gdb.sh
@@ -1401,7 +1488,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..4843516 100644
+index 91c2d9a..2f184dd 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1410,7 +1497,7 @@ index 91c2d9a..4843516 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 9dfaba214c3a8bc7d8ecd1ad778f04f5c47d12e2" # Reset to this commit hash for reproducible builds
++			"git reset --hard 2fdf3eaa05765caa50f69a91a78f4c916376b09c" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1465,7 +1552,7 @@ index 1cbca9d..b8b5867 100644
  
  #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index f2cc819..f6e577c 100644
+index f2cc819..e5a3d94 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -1493,6 +1580,25 @@ index f2cc819..f6e577c 100644
  	--openssldir=$LIBS_DIR/ssl
  	#
  	shared
+@@ -82,7 +83,7 @@ PKG_MAKE_FLAGS=(
+ 	-j$JOBS
+ 	ZLIB_INCLUDE="\"-I$PREREQW_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/include\""
+ 	depend
+-	all
++	build_sw
+ )
+ 
+ #
+@@ -95,7 +96,8 @@ PKG_TESTSUITE_FLAGS=(
+ 
+ PKG_INSTALL_FLAGS=(
+ 	# -j$JOBS
+-	install
++	install_sw
++	install_ssldirs
+ )
+ 
+ # **************************************************************************
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
 index 58c0605..a499c06 100644
 --- a/scripts/python-3.sh
