@@ -6,6 +6,12 @@ name: All
 on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
+    inputs:
+      modes:
+        description: 'list of modes to build'
+        required: true
+        type: string
+        default: '["gcc-13.1.0"]'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -14,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        mode: ['gcc-13.1.0']
+        mode: ${{ fromJSON(github.event.inputs.modes) }}
         arch: ['i686', 'x86_64']
         threading: ['posix', 'win32', 'mcf']
         exceptions: ['dwarf', 'seh', 'sjlj']
