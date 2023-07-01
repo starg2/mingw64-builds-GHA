@@ -12,6 +12,26 @@ on:
         required: true
         type: string
         default: '["gcc-13.1.0"]'
+      arch:
+        description: 'list of architectures'
+        required: true
+        type: string
+        default: '["i686", "x86_64"]'
+      threading:
+        description: 'list of thread models'
+        required: true
+        type: string
+        default: '["posix", "win32", "mcf"]'
+      exceptions:
+        description: 'list of exception models'
+        required: true
+        type: string
+        default: '["dwarf", "seh", "sjlj"]'
+      crt:
+        description: 'list of crt libs'
+        required: true
+        type: string
+        default: '["msvcrt", "ucrt"]'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -21,10 +41,10 @@ jobs:
       fail-fast: false
       matrix:
         mode: ${{ fromJSON(github.event.inputs.modes) }}
-        arch: ['i686', 'x86_64']
-        threading: ['posix', 'win32', 'mcf']
-        exceptions: ['dwarf', 'seh', 'sjlj']
-        crt: ['msvcrt', 'ucrt']
+        arch: ${{ fromJSON(github.event.inputs.arch) }}
+        threading: ${{ fromJSON(github.event.inputs.threading) }}
+        exceptions: ${{ fromJSON(github.event.inputs.exceptions) }}
+        crt: ${{ fromJSON(github.event.inputs.crt) }}
         exclude:
           - arch: 'i686'
             exceptions: 'seh'
