@@ -105,7 +105,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: starg2/mingw-builds
-          ref: 0e1416ace26aac831a37821f6afea57244d33aba
+          ref: ee883951bc1fef66c66a69707b9450eb1b085619
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
