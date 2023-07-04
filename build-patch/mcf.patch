@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index c1fb596..1a62d3f 100755
+index dfc30da..15af362 100755
 --- a/build
 +++ b/build
 @@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
@@ -11,7 +11,7 @@ index c1fb596..1a62d3f 100755
  	echo "    --static-gcc               - build static GCC"
  	echo "    --with-default-msvcrt=     - specifies msvc version the toolchain will target"
  	echo "                                 <msvcrt|msvcr80|msvcr90|msvcr100|msvcr110|msvcr120|ucrt>"
-@@ -372,10 +372,10 @@ while [[ $# > 0 ]]; do
+@@ -373,10 +373,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
  			case $THREADS_MODEL in
@@ -24,7 +24,7 @@ index c1fb596..1a62d3f 100755
  				;;
  			esac
  		;;
-@@ -659,6 +659,10 @@ case $BUILD_ARCHITECTURE in
+@@ -660,6 +660,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  

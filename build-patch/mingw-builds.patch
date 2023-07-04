@@ -1702,25 +1702,6 @@ index 457bfd1..ac151e2 100644
  PKG_NAME=tk${PKG_VERSION}
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
-diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index ad25a1d..088ad44 100644
---- a/scripts/xz-utils.sh
-+++ b/scripts/xz-utils.sh
-@@ -35,12 +35,12 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=5.2.5
-+PKG_VERSION=5.4.3
- PKG_NAME=xz-${PKG_VERSION}
- PKG_DIR_NAME=xz-${PKG_VERSION}
- PKG_TYPE=.tar.xz
- PKG_URLS=(
--	"https://tukaani.org/xz/xz-${PKG_VERSION}${PKG_TYPE}"
-+	"https://github.com/tukaani-project/xz/releases/download/v${PKG_VERSION}/xz-${PKG_VERSION}${PKG_TYPE}"
- )
- 
- PKG_PRIORITY=extra
 diff --git a/scripts/zlib.sh b/scripts/zlib.sh
 index 505b5e6..f184a49 100644
 --- a/scripts/zlib.sh
