@@ -40,7 +40,7 @@ index bcd89a3..c7f98af 100644
  # **************************************************************************
  
 diff --git a/library/functions.sh b/library/functions.sh
-index 8ef7751..e3d3284 100644
+index 5f3268d..2fd39de 100644
 --- a/library/functions.sh
 +++ b/library/functions.sh
 @@ -438,7 +438,6 @@ function func_download {
@@ -1703,10 +1703,10 @@ index 457bfd1..ac151e2 100644
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index ad25a1d..210449c 100644
+index ad25a1d..088ad44 100644
 --- a/scripts/xz-utils.sh
 +++ b/scripts/xz-utils.sh
-@@ -35,7 +35,7 @@
+@@ -35,12 +35,12 @@
  
  # **************************************************************************
  
@@ -1715,6 +1715,12 @@ index ad25a1d..210449c 100644
  PKG_NAME=xz-${PKG_VERSION}
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz
+ PKG_URLS=(
+-	"https://tukaani.org/xz/xz-${PKG_VERSION}${PKG_TYPE}"
++	"https://github.com/tukaani-project/xz/releases/download/v${PKG_VERSION}/xz-${PKG_VERSION}${PKG_TYPE}"
+ )
+ 
+ PKG_PRIORITY=extra
 diff --git a/scripts/zlib.sh b/scripts/zlib.sh
 index 505b5e6..f184a49 100644
 --- a/scripts/zlib.sh
