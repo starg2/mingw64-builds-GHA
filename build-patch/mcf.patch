@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index dfc30da..15af362 100755
+index 5be2388..01ad00a 100755
 --- a/build
 +++ b/build
 @@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
@@ -4707,10 +4707,10 @@ index dbe8901..982ded3 100644
  
  #
 diff --git a/scripts/licenses.sh b/scripts/licenses.sh
-index 91cce62..c6c740c 100644
+index 963b85f..912fcf7 100644
 --- a/scripts/licenses.sh
 +++ b/scripts/licenses.sh
-@@ -69,6 +69,7 @@ function func_get_licenses {
+@@ -72,6 +72,7 @@ function func_get_licenses {
  		cloog
  		libiconv
  		zlib
@@ -4927,7 +4927,7 @@ index c6bfc70..50b9adc 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 2f184dd..9f88f5f 100644
+index 89032fc..79f509c 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@
