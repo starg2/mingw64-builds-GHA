@@ -11,7 +11,7 @@ on:
         description: 'list of modes to build'
         required: true
         type: string
-        default: '["gcc-13.1.0"]'
+        default: '["gcc-13.2.0"]'
       arch:
         description: 'list of architectures'
         required: true
@@ -105,7 +105,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: starg2/mingw-builds
-          ref: c8aa3a02d7ac546bd5077f154b9622317d5e8a37
+          ref: a643f8962d314cae51ec5a72296137faf34b4afc
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
