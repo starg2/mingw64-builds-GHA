@@ -1,5 +1,5 @@
 diff --git a/build b/build
-index 5be2388..01ad00a 100755
+index fe3676c..f9c59f6 100755
 --- a/build
 +++ b/build
 @@ -67,7 +67,7 @@ readonly RUN_ARGS="$@"
@@ -11,7 +11,7 @@ index 5be2388..01ad00a 100755
  	echo "    --static-gcc               - build static GCC"
  	echo "    --with-default-msvcrt=     - specifies msvc version the toolchain will target"
  	echo "                                 <msvcrt|msvcr80|msvcr90|msvcr100|msvcr110|msvcr120|ucrt>"
-@@ -373,10 +373,10 @@ while [[ $# > 0 ]]; do
+@@ -375,10 +375,10 @@ while [[ $# > 0 ]]; do
  		--threads=*)
  			THREADS_MODEL=${1/--threads=/}
  			case $THREADS_MODEL in
@@ -24,7 +24,7 @@ index 5be2388..01ad00a 100755
  				;;
  			esac
  		;;
-@@ -660,6 +660,10 @@ case $BUILD_ARCHITECTURE in
+@@ -662,6 +662,10 @@ case $BUILD_ARCHITECTURE in
  	;;
  esac
  
@@ -4927,7 +4927,7 @@ index c6bfc70..50b9adc 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 89032fc..79f509c 100644
+index 2edfad9..ebbd073 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@
