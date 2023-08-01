@@ -1115,6 +1115,26 @@ index 0000000..d60c31a
 +consider it more useful to permit linking proprietary applications with the
 +library.  If this is what you want to do, use the GNU Library General
 +Public License instead of this License.
+diff --git a/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch b/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch
+new file mode 100644
+index 0000000..eda0fdd
+--- /dev/null
++++ b/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch
+@@ -0,0 +1,14 @@
++diff --git a/Makefile.pre.in b/Makefile.pre.in
++index d5a9e2b8aa..2137d8ab13 100644
++--- a/Makefile.pre.in
+++++ b/Makefile.pre.in
++@@ -857,8 +857,7 @@ $(DLLLIBRARY) libpython$(LDVERSION).dll.a: $(LIBRARY_OBJS) python_nt.o
++ # --preload-file turns a relative asset path into an absolute path.
++ 
++ .PHONY: wasm_stdlib
++-wasm_stdlib: $(WASM_STDLIB)
++-$(WASM_STDLIB): $(srcdir)/Lib/*.py $(srcdir)/Lib/*/*.py \
+++wasm_stdlib: $(srcdir)/Lib/*.py $(srcdir)/Lib/*/*.py \
++ 	    $(srcdir)/Tools/wasm/wasm_assets.py \
++ 	    Makefile pybuilddir.txt Modules/Setup.local
++ 	$(PYTHON_FOR_BUILD) $(srcdir)/Tools/wasm/wasm_assets.py \
 diff --git a/patches/binutils/0110-binutils-mingw-gnu-print.patch b/patches/binutils/0110-binutils-mingw-gnu-print.patch
 index 91dcd7e..2adda2a 100644
 --- a/patches/binutils/0110-binutils-mingw-gnu-print.patch
@@ -1538,7 +1558,7 @@ index 7d50443..1716fe1 100644
  	#rm -rf $LIBS_DIR/include
  	rm -rf $LIBS_DIR/lib/pkgconfig
 diff --git a/scripts/binutils.sh b/scripts/binutils.sh
-index 90c0913..4a5438c 100644
+index 90c0913..4f120c7 100644
 --- a/scripts/binutils.sh
 +++ b/scripts/binutils.sh
 @@ -35,7 +35,7 @@
@@ -1546,18 +1566,10 @@ index 90c0913..4a5438c 100644
  # **************************************************************************
  
 -PKG_VERSION=2.39
-+PKG_VERSION=2.40
++PKG_VERSION=2.41
  PKG_NAME=binutils-${PKG_VERSION}
  [[ $USE_MULTILIB == yes ]] && {
  	PKG_NAME=$BUILD_ARCHITECTURE-$PKG_NAME-multi
-@@ -59,6 +59,7 @@ PKG_PATCHES=(
- 	binutils/0009-fix-libiberty-configure.mingw.patch
- 	binutils/0022-libiberty-missing-typedef.patch
- 	binutils/0110-binutils-mingw-gnu-print.patch
-+	binutils/3001-try-fix-compare_section-abort.patch
- )
- 
- #
 diff --git a/scripts/bzip2.sh b/scripts/bzip2.sh
 index e403301..4be5e54 100644
 --- a/scripts/bzip2.sh
@@ -1690,7 +1702,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..2edfad9 100644
+index 91c2d9a..6e29286 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1699,7 +1711,7 @@ index 91c2d9a..2edfad9 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 5eb3157de9be903f6ac3b3af19e10dc53ee46593" # Reset to this commit hash for reproducible builds
++			"git reset --hard 38322905b64f64a5fbb70f53064918daa9b7ca08" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1754,7 +1766,7 @@ index 1cbca9d..b8b5867 100644
  
  #
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..d130009 100644
+index 58c0605..163d152 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -1762,16 +1774,23 @@ index 58c0605..d130009 100644
  # **************************************************************************
  
 -PKG_VERSION=3.9.10
-+PKG_VERSION=3.10.12
++PKG_VERSION=3.11.4
  PKG_NAME=Python-${PKG_VERSION}
  PKG_DIR_NAME=Python-${PKG_VERSION}
  PKG_TYPE=git
-@@ -48,7 +48,7 @@ PKG_PRIORITY=extra
+@@ -48,13 +48,13 @@ PKG_PRIORITY=extra
  #
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard 8ea5be64f2684431df3e0e79e0cf114cc1f48020" # Reset to this commit hash for reproducible builds
++	"git reset --hard a2f208768fb0cb9a6fd1c39105103e04a341bcb1" # Reset to this commit hash for reproducible builds
+ )
+ 
+ #
+ 
+ PKG_PATCHES=(
+-	python3/0100-get-libraries-tuple-append-list.patch
++	Python3/python-3.11-remove-WASM_STDLIB-target.patch
  )
  
  #
@@ -1787,7 +1806,7 @@ index 58c0605..d130009 100644
 +	CFLAGS="\"$COMMON_CFLAGS $MY_CPPFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
 +	CPPFLAGS="\"$COMMON_CPPFLAGS $MY_CPPFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
  	LDFLAGS="\"$COMMON_LDFLAGS -L$PREREQW_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib -L$LIBSW_DIR/lib\""
-+	LIBS="\"-lffi -lole32 -loleaut32 -luuid\""
++	LIBS="\"-lffi -ltcl -ltk -lole32 -loleaut32 -luuid\""
  )
  
  #
