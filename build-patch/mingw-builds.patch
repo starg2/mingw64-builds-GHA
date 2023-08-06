@@ -1644,6 +1644,19 @@ index c0bff32..1ab790a 100644
  	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
  )
  
+diff --git a/scripts/gmp.sh b/scripts/gmp.sh
+index 0b590e1..c7ddb58 100644
+--- a/scripts/gmp.sh
++++ b/scripts/gmp.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=6.2.1
++PKG_VERSION=6.3.0
+ PKG_NAME=$BUILD_ARCHITECTURE-gmp-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+ PKG_DIR_NAME=gmp-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
 diff --git a/scripts/libffi.sh b/scripts/libffi.sh
 index 8d4445a..bc57b83 100644
 --- a/scripts/libffi.sh
@@ -1702,7 +1715,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..6e29286 100644
+index 91c2d9a..e6a9af2 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1711,7 +1724,7 @@ index 91c2d9a..6e29286 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 38322905b64f64a5fbb70f53064918daa9b7ca08" # Reset to this commit hash for reproducible builds
++			"git reset --hard 2a65dba7d9f1dab44ab47c33fd448c8033323c1c" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1765,6 +1778,19 @@ index 1cbca9d..b8b5867 100644
  )
  
  #
+diff --git a/scripts/openssl.sh b/scripts/openssl.sh
+index e5a3d94..e89621e 100644
+--- a/scripts/openssl.sh
++++ b/scripts/openssl.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=3.1.1
++PKG_VERSION=3.1.2
+ PKG_NAME=openssl-${PKG_VERSION}
+ PKG_DIR_NAME=openssl-${PKG_VERSION}
+ PKG_TYPE=.tar.gz
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
 index 58c0605..163d152 100644
 --- a/scripts/python-3.sh
@@ -1835,7 +1861,7 @@ index e7f1d90..9675bcd 100644
  
  #
 diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
-index 4233f82..e5f0248 100644
+index 4233f82..56350ac 100644
 --- a/scripts/sqlite.sh
 +++ b/scripts/sqlite.sh
 @@ -35,12 +35,12 @@
@@ -1843,7 +1869,7 @@ index 4233f82..e5f0248 100644
  # **************************************************************************
  
 -PKG_VERSION=3350500
-+PKG_VERSION=3410200
++PKG_VERSION=3420000
  PKG_NAME=sqlite-${PKG_VERSION}
  PKG_DIR_NAME=sqlite-autoconf-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -1900,6 +1926,19 @@ index 457bfd1..ac151e2 100644
  PKG_NAME=tk${PKG_VERSION}
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
+diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
+index 088ad44..56d556e 100644
+--- a/scripts/xz-utils.sh
++++ b/scripts/xz-utils.sh
+@@ -35,7 +35,7 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=5.4.3
++PKG_VERSION=5.4.4
+ PKG_NAME=xz-${PKG_VERSION}
+ PKG_DIR_NAME=xz-${PKG_VERSION}
+ PKG_TYPE=.tar.xz
 diff --git a/scripts/zlib.sh b/scripts/zlib.sh
 index 505b5e6..f184a49 100644
 --- a/scripts/zlib.sh
