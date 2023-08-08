@@ -120,16 +120,16 @@ jobs:
       - name: Install host toolchain (i686)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-07-09/gcc-13.1.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
-          7z e gcc-13.1.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip i686-13.1.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z
-          7z x i686-13.1.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z -o/d/toolchains
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-08-08/gcc-13.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-13.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip i686-13.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z
+          7z x i686-13.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z -o/d/toolchains
 
       - name: Install host toolchain (x86_64)
         if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-07-09/gcc-13.1.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
-          7z e gcc-13.1.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip x86_64-13.1.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z
-          7z x x86_64-13.1.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z -o/d/toolchains
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2023-08-08/gcc-13.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-13.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip x86_64-13.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z
+          7z x x86_64-13.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v12.7z -o/d/toolchains
 
       - name: Build
         run: >-
