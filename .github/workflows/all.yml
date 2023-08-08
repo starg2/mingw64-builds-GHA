@@ -8,27 +8,27 @@ on:
   workflow_dispatch:
     inputs:
       modes:
-        description: 'list of modes to build'
+        description: 'modes'
         required: true
         type: string
         default: '["gcc-13.2.0"]'
       arch:
-        description: 'list of architectures'
+        description: 'arch'
         required: true
         type: string
         default: '["i686", "x86_64"]'
       threading:
-        description: 'list of thread models'
+        description: 'threading'
         required: true
         type: string
         default: '["posix", "win32", "mcf"]'
       exceptions:
-        description: 'list of exception models'
+        description: 'exceptions'
         required: true
         type: string
         default: '["dwarf", "seh", "sjlj"]'
       crt:
-        description: 'list of crt libs'
+        description: 'crt'
         required: true
         type: string
         default: '["msvcrt", "ucrt"]'
