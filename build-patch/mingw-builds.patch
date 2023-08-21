@@ -1658,7 +1658,7 @@ index 0b590e1..c7ddb58 100644
  PKG_DIR_NAME=gmp-${PKG_VERSION}
  PKG_TYPE=.tar.xz
 diff --git a/scripts/libffi.sh b/scripts/libffi.sh
-index 8d4445a..bc57b83 100644
+index 8d4445a..83aa1f4 100644
 --- a/scripts/libffi.sh
 +++ b/scripts/libffi.sh
 @@ -35,21 +35,19 @@
@@ -1686,6 +1686,15 @@ index 8d4445a..bc57b83 100644
  
  #
  
+@@ -60,7 +58,7 @@ PKG_CONFIGURE_FLAGS=(
+ 	#
+ 	--prefix=$LIBS_DIR
+ 	#
+-	$LINK_TYPE_STATIC
++	$LINK_TYPE_SHARED
+ 	#
+ 	CFLAGS="\"$COMMON_CFLAGS\""
+ 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
 diff --git a/scripts/licenses.sh b/scripts/licenses.sh
 index a802892..963b85f 100644
 --- a/scripts/licenses.sh
@@ -1715,7 +1724,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..e6a9af2 100644
+index 91c2d9a..ef858c6 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1724,7 +1733,7 @@ index 91c2d9a..e6a9af2 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard 2a65dba7d9f1dab44ab47c33fd448c8033323c1c" # Reset to this commit hash for reproducible builds
++			"git reset --hard c44c257014125934c94d98baabc51257e638106f" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1792,7 +1801,7 @@ index e5a3d94..e89621e 100644
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..163d152 100644
+index 58c0605..4427077 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
 @@ -35,7 +35,7 @@
@@ -1809,7 +1818,7 @@ index 58c0605..163d152 100644
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
 -	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard a2f208768fb0cb9a6fd1c39105103e04a341bcb1" # Reset to this commit hash for reproducible builds
++	"git reset --hard 95b1546da60ce10fc038f51790bf799d3780d37a" # Reset to this commit hash for reproducible builds
  )
  
  #
