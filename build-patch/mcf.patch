@@ -4927,7 +4927,7 @@ index c6bfc70..50b9adc 100644
  )
  
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index ef858c6..b96539f 100644
+index d3e5c15..e1fcdf7 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -35,6 +35,8 @@
