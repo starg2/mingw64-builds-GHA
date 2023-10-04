@@ -1,8 +1,8 @@
 diff --git a/build b/build
-index 0955119..fe3676c 100755
+index c8af400..bbd456b 100755
 --- a/build
 +++ b/build
-@@ -688,7 +688,7 @@ readonly REVERSE_ARCHITECTURE=$(func_get_reverse_arch $BUILD_ARCHITECTURE)
+@@ -696,7 +696,7 @@ readonly REVERSE_ARCHITECTURE=$(func_get_reverse_arch $BUILD_ARCHITECTURE)
  		[[ -z ${BUILD_ARCHITECTURE} ]] && { echo -n "any"; } || { echo -n "${BUILD_ARCHITECTURE}"; }
  		[[ -z ${EXCEPTIONS_MODEL} ]] && { echo ""; } || { echo "-${EXCEPTIONS_MODEL}"; }
  	} || {
@@ -1349,6 +1349,30 @@ index 0000000..43648ad
 +-- 
 +2.39.2
 +
+diff --git a/patches/gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch b/patches/gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
+new file mode 100644
+index 0000000..2b9c03f
+--- /dev/null
++++ b/patches/gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
+@@ -0,0 +1,18 @@
++diff --git a/gcc/lto-wrapper.cc b/gcc/lto-wrapper.cc
++index 5186d040ce0..755a2cce816 100644
++--- a/gcc/lto-wrapper.cc
+++++ b/gcc/lto-wrapper.cc
++@@ -2020,13 +2020,6 @@ cont:
++ 	      for (j = 1; new_argv[j] != NULL; ++j)
++ 		fprintf (mstream, " '%s'", new_argv[j]);
++ 	      fprintf (mstream, "\n");
++-	      /* If we are not preserving the ltrans input files then
++-	         truncate them as soon as we have processed it.  This
++-		 reduces temporary disk-space usage.  */
++-	      if (! save_temps)
++-		fprintf (mstream, "\t@-touch -r \"%s\" \"%s.tem\" > /dev/null "
++-			 "2>&1 && mv \"%s.tem\" \"%s\"\n",
++-			 input_name, input_name, input_name, input_name); 
++ 	    }
++ 	  else
++ 	    {
 diff --git a/patches/gdb/gdb-fix-using-gnu-print.patch b/patches/gdb/gdb-fix-using-gnu-print.patch
 index b32bb8d..a7d573d 100644
 --- a/patches/gdb/gdb-fix-using-gnu-print.patch
@@ -1540,10 +1564,10 @@ index 0000000..1a93175
 + #include <stdlib.h>
 + #include <string.h>
 diff --git a/scripts/3rdparty-post.sh b/scripts/3rdparty-post.sh
-index 7d50443..1716fe1 100644
+index 24da07c..b27b26b 100644
 --- a/scripts/3rdparty-post.sh
 +++ b/scripts/3rdparty-post.sh
-@@ -63,10 +63,10 @@ function python_deps_post {
+@@ -64,10 +64,10 @@ function python_deps_post {
  	}
  
  	rm -f $LIBS_DIR/bin/{bz*,bunzip2}
@@ -1615,6 +1639,18 @@ index ca2c736..7ba4c5c 100644
  	gcc/gcc-10-libgcc-ldflags.patch
      gcc/gcc-12-replace-abort-with-fancy_abort.patch
 +    gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
+ )
+ 
+ #
+diff --git a/scripts/gcc-13.2.0.sh b/scripts/gcc-13.2.0.sh
+index 575de3e..45ef356 100644
+--- a/scripts/gcc-13.2.0.sh
++++ b/scripts/gcc-13.2.0.sh
+@@ -58,6 +58,7 @@ PKG_PATCHES=(
+ 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+ 	gcc/gcc-10-libgcc-ldflags.patch
+ 	gcc/gcc-12-replace-abort-with-fancy_abort.patch
++	gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
  )
  
  #
@@ -1696,7 +1732,7 @@ index 8d4445a..83aa1f4 100644
  	CFLAGS="\"$COMMON_CFLAGS\""
  	CXXFLAGS="\"$COMMON_CXXFLAGS\""
 diff --git a/scripts/licenses.sh b/scripts/licenses.sh
-index a802892..963b85f 100644
+index 600b05d..912fcf7 100644
 --- a/scripts/licenses.sh
 +++ b/scripts/licenses.sh
 @@ -49,8 +49,10 @@ function func_get_licenses {
@@ -1724,7 +1760,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..d3e5c15 100644
+index 91c2d9a..49351bc 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1733,7 +1769,7 @@ index 91c2d9a..d3e5c15 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard ddc5b0f6ec4a153485741587885916c8c234da80" # Reset to this commit hash for reproducible builds
++			"git reset --hard cc481d54bda1735328e084879344ce0046a84d3d" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1788,7 +1824,7 @@ index 1cbca9d..b8b5867 100644
  
  #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index e5a3d94..e89621e 100644
+index e5a3d94..1d1bd6e 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -1796,7 +1832,7 @@ index e5a3d94..e89621e 100644
  # **************************************************************************
  
 -PKG_VERSION=3.1.1
-+PKG_VERSION=3.1.2
++PKG_VERSION=3.1.3
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -1949,10 +1985,16 @@ index 088ad44..56d556e 100644
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz
 diff --git a/scripts/zlib.sh b/scripts/zlib.sh
-index 505b5e6..f184a49 100644
+index 505b5e6..b72cc7e 100644
 --- a/scripts/zlib.sh
 +++ b/scripts/zlib.sh
-@@ -40,7 +40,7 @@ PKG_NAME=$PKG_ARCHITECTURE-zlib-${PKG_VERSION}-$LINK_TYPE_SUFFIX
+@@ -35,12 +35,12 @@
+ 
+ # **************************************************************************
+ 
+-PKG_VERSION=1.2.13
++PKG_VERSION=1.3
+ PKG_NAME=$PKG_ARCHITECTURE-zlib-${PKG_VERSION}-$LINK_TYPE_SUFFIX
  PKG_DIR_NAME=zlib-${PKG_VERSION}
  PKG_TYPE=.tar.gz
  PKG_URLS=(
