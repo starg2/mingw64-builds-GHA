@@ -105,16 +105,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: starg2/mingw-builds
-          ref: 036f2f5ef252772e3cda55275e3f3d3975ebadf6
+          ref: b876df909372d7fb0ab21aa58ce1b7c0df813dbe
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
         run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
-        working-directory: mingw-builds
-
-      - name: Patch build scripts (mcf.patch)
-        if: ${{ matrix.threading == 'mcf' }}
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mcf.patch
         working-directory: mingw-builds
 
       - name: Install host toolchain (i686)
