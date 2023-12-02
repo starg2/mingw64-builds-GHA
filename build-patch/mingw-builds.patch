@@ -1,29 +1,3 @@
-diff --git a/build b/build
-index c8af400..bbd456b 100755
---- a/build
-+++ b/build
-@@ -696,7 +696,7 @@ readonly REVERSE_ARCHITECTURE=$(func_get_reverse_arch $BUILD_ARCHITECTURE)
- 		[[ -z ${BUILD_ARCHITECTURE} ]] && { echo -n "any"; } || { echo -n "${BUILD_ARCHITECTURE}"; }
- 		[[ -z ${EXCEPTIONS_MODEL} ]] && { echo ""; } || { echo "-${EXCEPTIONS_MODEL}"; }
- 	} || {
--		echo -n "${BUILD_ARCHITECTURE}"
-+		echo "${BUILD_ARCHITECTURE}"
- 	}
- } || {
- 	[[ $BUILD_MODE == gcc ]] && {
-diff --git a/library/config-win.sh b/library/config-win.sh
-index 4f9a8f0..4580e81 100644
---- a/library/config-win.sh
-+++ b/library/config-win.sh
-@@ -101,6 +101,8 @@ function func_test_installed_packages {
- 		texinfo
- 		autogen
- 		dejagnu
-+		pkgconf
-+		dos2unix
- 	)
- 
- 	echo "--> installing required packages..."
 diff --git a/library/config.sh b/library/config.sh
 index bcd89a3..c7f98af 100644
 --- a/library/config.sh
@@ -1115,26 +1089,6 @@ index 0000000..d60c31a
 +consider it more useful to permit linking proprietary applications with the
 +library.  If this is what you want to do, use the GNU Library General
 +Public License instead of this License.
-diff --git a/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch b/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch
-new file mode 100644
-index 0000000..eda0fdd
---- /dev/null
-+++ b/patches/Python3/python-3.11-remove-WASM_STDLIB-target.patch
-@@ -0,0 +1,14 @@
-+diff --git a/Makefile.pre.in b/Makefile.pre.in
-+index d5a9e2b8aa..2137d8ab13 100644
-+--- a/Makefile.pre.in
-++++ b/Makefile.pre.in
-+@@ -857,8 +857,7 @@ $(DLLLIBRARY) libpython$(LDVERSION).dll.a: $(LIBRARY_OBJS) python_nt.o
-+ # --preload-file turns a relative asset path into an absolute path.
-+ 
-+ .PHONY: wasm_stdlib
-+-wasm_stdlib: $(WASM_STDLIB)
-+-$(WASM_STDLIB): $(srcdir)/Lib/*.py $(srcdir)/Lib/*/*.py \
-++wasm_stdlib: $(srcdir)/Lib/*.py $(srcdir)/Lib/*/*.py \
-+ 	    $(srcdir)/Tools/wasm/wasm_assets.py \
-+ 	    Makefile pybuilddir.txt Modules/Setup.local
-+ 	$(PYTHON_FOR_BUILD) $(srcdir)/Tools/wasm/wasm_assets.py \
 diff --git a/patches/binutils/0110-binutils-mingw-gnu-print.patch b/patches/binutils/0110-binutils-mingw-gnu-print.patch
 index 91dcd7e..2adda2a 100644
 --- a/patches/binutils/0110-binutils-mingw-gnu-print.patch
@@ -1269,6 +1223,36 @@ index 91dcd7e..2adda2a 100644
   # endif /* GNUC >= 3.3 */
 +-- 
 +2.32.0
+diff --git a/patches/binutils/0120-fix-ld-path-corruption.patch b/patches/binutils/0120-fix-ld-path-corruption.patch
+index 78868e2..d5ad895 100644
+--- a/patches/binutils/0120-fix-ld-path-corruption.patch
++++ b/patches/binutils/0120-fix-ld-path-corruption.patch
+@@ -1,16 +1,16 @@
+-diff --unified --recursive --text binutils-2.39.orig/bfd/bfdio.c binutils-2.39/bfd/bfdio.c
+---- binutils-2.39.orig/bfd/bfdio.c      2022-07-08 17:46:47.000000000 +0800
+-+++ binutils-2.39/bfd/bfdio.c   2023-06-24 19:56:02.752090800 +0800
+-@@ -122,7 +122,7 @@
+-    const wchar_t  prefix[] = L"\\\\?\\";
+-    const size_t   partPathLen = strlen (filename) + 1;
+- #ifdef __MINGW32__
+--   const unsigned int cp = ___lc_codepage_func();
++diff --unified --recursive --text binutils-2.41.orig/bfd/bfdio.c binutils-2.41/bfd/bfdio.c
++--- binutils-2.41.orig/bfd/bfdio.c
+++++ binutils-2.41/bfd/bfdio.c
++@@ -126,7 +126,7 @@
++ /* This prototype was added to locale.h in version 9.0 of MinGW-w64.  */
++    _CRTIMP unsigned int __cdecl ___lc_codepage_func (void);
++ #endif
++-   const unsigned int cp = ___lc_codepage_func ();
+ +   const unsigned int cp = CP_ACP;
+  #else
+     const unsigned int cp = CP_UTF8;
+  #endif
+-@@ -138,8 +138,8 @@
++@@ -142,8 +142,8 @@
+ 
+     /* Convert any UNIX style path separators into the DOS i.e. backslash separator.  */
+     for (ix = 0; ix < partPathLen; ix++)
 diff --git a/patches/binutils/3001-try-fix-compare_section-abort.patch b/patches/binutils/3001-try-fix-compare_section-abort.patch
 new file mode 100644
 index 0000000..c621865
@@ -1529,6 +1513,952 @@ index 0000000..e3b5d46
 + do
 + 	case $opt in
 + 	-specs*) # ignore linker specs-files which were used to build library
+diff --git a/patches/openssl/openssl-3.0.8-relocation.patch b/patches/openssl/openssl-3.0.8-relocation.patch
+index 68b276c..e455616 100644
+--- a/patches/openssl/openssl-3.0.8-relocation.patch
++++ b/patches/openssl/openssl-3.0.8-relocation.patch
+@@ -1,11 +1,11 @@
+ --- crypto/build.info.orig
+ +++ crypto/build.info
+ @@ -105,7 +105,7 @@
+-         mem.c mem_sec.c \
+          cversion.c info.c cpt_err.c ebcdic.c uid.c o_time.c o_dir.c \
+          o_fopen.c getenv.c o_init.c init.c trace.c provider.c provider_child.c \
+--        punycode.c passphrase.c
+-+        punycode.c passphrase.c pathtools.c
++         punycode.c passphrase.c sleep.c deterministic_nonce.c quic_vlint.c \
++-        time.c
+++        time.c pathtools.c
+  SOURCE[../providers/libfips.a]=$UTIL_COMMON
+  
+  SOURCE[../libcrypto]=$UPLINKSRC
+diff --git a/patches/readline/0001-sigwinch.patch b/patches/readline/0001-sigwinch.patch
+new file mode 100644
+index 0000000..bde243f
+--- /dev/null
++++ b/patches/readline/0001-sigwinch.patch
+@@ -0,0 +1,86 @@
++diff -ur readline-8.1.2/readline.c readline-8.1.3/readline.c
++--- readline-8.1.2/readline.c	2020-12-19 07:55:06.477760951 -0500
+++++ readline-8.1.3/readline.c	2020-12-19 07:56:17.722659252 -0500
++@@ -1186,8 +1186,13 @@
++       RL_SETSTATE(RL_STATE_INITIALIZED);
++     }
++   else
++-    _rl_reset_locale ();	/* check current locale and set locale variables */
+++    {
+++      _rl_reset_locale ();	/* check current locale and set locale variables */
+++#if defined (__MINGW32__)
+++      rl_reset_screen_size ();
+++#endif      
+++    }
++ 
++   /* Initialize the current line information. */
++   _rl_init_line_state ();
++ 
++Only in readline-8.1.3: readline.c.orig
++diff -ur readline-8.1.2/signals.c readline-8.1.3/signals.c
++--- readline-8.1.2/signals.c	2020-12-19 07:55:06.471760622 -0500
+++++ readline-8.1.3/signals.c	2020-12-19 08:19:50.548964783 -0500
++@@ -46,6 +46,11 @@
++ 
++ #include "rlprivate.h"
++ 
+++#if defined (__MINGW32__)
+++#  define WIN32_LEAN_AND_MEAN
+++#  include <windows.h>
+++#endif
+++
++ #if defined (HANDLE_SIGNALS)
++ 
++ #if !defined (RETSIGTYPE)
++@@ -92,7 +97,7 @@
++ int rl_catch_signals = 1;
++ 
++ /* If non-zero, readline will install a signal handler for SIGWINCH. */
++-#ifdef SIGWINCH
+++#if defined (SIGWINCH) || defined(__MINGW32__)
++ int rl_catch_sigwinch = 1;
++ #else
++ int rl_catch_sigwinch = 0;	/* for the readline state struct in readline.c */
++@@ -532,6 +539,21 @@
++     }
++ #endif /* SIGWINCH */
++ 
+++#if defined (__MINGW32__)
+++  if (rl_catch_sigwinch && sigwinch_set_flag == 0)
+++    {
+++      DWORD mode;
+++      HANDLE hStdIn = GetStdHandle (STD_INPUT_HANDLE);
+++
+++      if (GetConsoleMode (hStdIn, &mode))
+++        {
+++          mode |= ENABLE_WINDOW_INPUT;
+++          if (SetConsoleMode (hStdIn, mode))
+++            sigwinch_set_flag = 1;
+++        }
+++    }
+++#endif
+++
++   return 0;
++ }
++ 
++@@ -582,6 +604,20 @@
++       sigwinch_set_flag = 0;
++     }
++ #endif
+++#if defined (__MINGW32__)
+++  if (rl_catch_sigwinch && sigwinch_set_flag == 1)
+++    {
+++      DWORD mode;
+++      HANDLE hStdIn = GetStdHandle (STD_INPUT_HANDLE);
+++
+++      if (GetConsoleMode (hStdIn, &mode))
+++        {
+++          mode &= ~ENABLE_WINDOW_INPUT;
+++          if (SetConsoleMode (hStdIn, mode))
+++            sigwinch_set_flag = 0;
+++        }
+++    }
+++#endif
++ 
++   return 0;
++ }
+diff --git a/patches/readline/0002-event-hook.patch b/patches/readline/0002-event-hook.patch
+new file mode 100644
+index 0000000..b62a29f
+--- /dev/null
++++ b/patches/readline/0002-event-hook.patch
+@@ -0,0 +1,195 @@
++--- readline-8.2/input.c.orig	2022-04-08 21:43:24.000000000 +0200
+++++ readline-8.2/input.c	2022-12-10 14:16:11.171817300 +0100
++@@ -176,6 +176,14 @@
++ static unsigned char ibuffer[512];
++ static int ibuffer_len = sizeof (ibuffer) - 1;
++ 
+++#if defined (__MINGW32__)
+++#include <windows.h>
+++static int _win32_getch (void);
+++static int _win32_kbhit (void);
+++static char _win32_buf[16] = {'0'};
+++static int _win32_bufidx = 0;
+++#endif
+++
++ #define any_typein (push_index != pop_index)
++ 
++ int
++@@ -187,7 +195,7 @@
++ int
++ _rl_pushed_input_available (void)
++ {
++-  return (push_index != pop_index);
+++  return ((push_index != pop_index) || _win32_bufidx > 0);
++ }
++ 
++ /* Return the amount of space available in the buffer for stuffing
++@@ -306,7 +314,7 @@
++ #if defined (__MINGW32__)
++   /* Use getch/_kbhit to check for available console input, in the same way
++      that we read it normally. */
++-   chars_avail = isatty (tty) ? _kbhit () : 0;
+++   chars_avail = isatty (tty) ? _win32_kbhit () : 0;
++    result = 0;
++ #endif
++ 
++@@ -404,7 +412,7 @@
++ 
++ #if defined (__MINGW32__)
++   if (isatty (tty))
++-    return (_kbhit ());
+++    return (_win32_kbhit ());
++ #endif
++ 
++   return 0;
++@@ -799,6 +807,139 @@
++   return (c);
++ }
++ 
+++#if defined (__MINGW32__)
+++#define _WIN32_READ_NOCHAR (-2)
+++
+++static int
+++_win32_getch_internal (int block)
+++{
+++  INPUT_RECORD rec;
+++  DWORD evRead, waitResult;
+++  HANDLE hInput = (HANDLE) _get_osfhandle (fileno (rl_instream));
+++
+++  if (_win32_bufidx > 0)
+++    return _win32_buf[--_win32_bufidx];
+++
+++  hInput = (HANDLE) _get_osfhandle (fileno (rl_instream));
+++
+++  do
+++    {
+++      if (! block)
+++        {
+++          if (WaitForSingleObject (hInput, _keyboard_input_timeout/1000) != WAIT_OBJECT_0)
+++            return _WIN32_READ_NOCHAR;
+++        }
+++
+++      if (! ReadConsoleInputW (hInput, &rec, 1, &evRead) || evRead != 1)
+++        return EOF;
+++
+++      switch (rec.EventType)
+++        {
+++          case KEY_EVENT:
+++            if ((rec.Event.KeyEvent.bKeyDown &&
+++               (rec.Event.KeyEvent.wVirtualKeyCode < VK_SHIFT ||
+++                rec.Event.KeyEvent.wVirtualKeyCode > VK_MENU)) ||
+++               (!rec.Event.KeyEvent.bKeyDown &&
+++                rec.Event.KeyEvent.wVirtualKeyCode == VK_MENU &&
+++                rec.Event.KeyEvent.uChar.UnicodeChar))
+++              {
+++                if (rec.Event.KeyEvent.uChar.UnicodeChar)
+++                  {
+++                    int result = (int) rec.Event.KeyEvent.uChar.UnicodeChar;
+++                    char charbuf[5] = {0};
+++                    wchar_t unicode[2] = {result, 0};
+++                    int utf16_code_units = 1;
+++                    if ((unicode[0] & 0xF800) == 0xD800)  /* outside BMP */
+++                      {
+++                        ReadConsoleInputW (hInput, &rec, 1, &evRead);
+++                        unicode[1] = (int) rec.Event.KeyEvent.uChar.UnicodeChar;
+++                        utf16_code_units++;
+++                      }
+++                    /* convert to current codepage or UTF-8 byte sequence */
+++                    unsigned int codepage = CP_THREAD_ACP;
+++                    if (_rl_utf8locale)
+++                      codepage = CP_UTF8;
+++                    int len = WideCharToMultiByte (codepage, 0,
+++                                                   (wchar_t *) &unicode, utf16_code_units,
+++                                                   charbuf, 5, NULL, NULL);
+++                    /* buffer is read from back to front */
+++                    for (int i=0; i<len-1; i++)
+++                      _win32_buf[_win32_bufidx++] = (unsigned char) charbuf[len-i-1];
+++
+++                    return (int) (unsigned char) charbuf[0];
+++                  }
+++
+++                switch (rec.Event.KeyEvent.wVirtualKeyCode)
+++                  {
+++                    /* buffer is read from back to front */
+++                    case VK_UP:
+++                      _win32_buf[_win32_bufidx++] = 'A';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_DOWN:
+++                      _win32_buf[_win32_bufidx++] = 'B';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_RIGHT:
+++                      _win32_buf[_win32_bufidx++] = 'C';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_LEFT:
+++                      _win32_buf[_win32_bufidx++] = 'D';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_HOME:
+++                      _win32_buf[_win32_bufidx++] = 'H';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_END:
+++                      _win32_buf[_win32_bufidx++] = 'F';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    case VK_DELETE:
+++                      _win32_buf[_win32_bufidx++] = 8;
+++                      _win32_buf[_win32_bufidx++] = 'C';
+++                      _win32_buf[_win32_bufidx++] = '[';
+++                      return 0x1b;  /* ESC */
+++                    default:
+++                      break;
+++                  }
+++              }
+++            break;
+++
+++          case WINDOW_BUFFER_SIZE_EVENT:
+++            rl_resize_terminal ();
+++            break;
+++
+++          default:
+++            break;
+++        }
+++    }
+++  while (1);
+++}
+++
+++static int 
+++_win32_kbhit (void)
+++{
+++  int result;
+++
+++  result = _win32_getch_internal (0);
+++  if (result == _WIN32_READ_NOCHAR
+++      || result == EOF)
+++    return 0;
+++
+++  _win32_buf[_win32_bufidx++] = result;
+++
+++  return _win32_bufidx;
+++}
+++
+++static int
+++_win32_getch (void)
+++{
+++  return (_win32_getch_internal (1));
+++}
+++#endif
+++
++ int
++ rl_getc (FILE *stream)
++ {
++@@ -818,8 +959,8 @@
++       /* We know at this point that _rl_caught_signal == 0 */
++ 
++ #if defined (__MINGW32__)
++-      if (isatty (fd)
++-	return (_getch ());	/* "There is no error return." */
+++      if (isatty (fd))
+++        return (_win32_getch ());
++ #endif
++       result = 0;
++ #if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
+diff --git a/patches/readline/0003-fd_set.patch b/patches/readline/0003-fd_set.patch
+new file mode 100644
+index 0000000..0d2b356
+--- /dev/null
++++ b/patches/readline/0003-fd_set.patch
+@@ -0,0 +1,15 @@
++Guard functions that use types that aren't available on all platforms with
++pre-processor conditions.
++
++diff -urN readline-8.2/rlprivate.h.orig readline-8.2/rlprivate.h
++--- readline-8.2/rlprivate.h.orig	2022-08-12 00:35:16.000000000 +0200
+++++ readline-8.2/rlprivate.h	2022-11-12 17:43:54.266291863 +0100
++@@ -303,7 +303,7 @@
++ 
++ extern int _rl_timeout_init (void);
++ extern int _rl_timeout_handle_sigalrm (void);
++-#if defined (_POSIXSELECT_H_)
+++#if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
++ /* use as a sentinel for fd_set, struct timeval,  and sigset_t definitions */
++ extern int _rl_timeout_select (int, fd_set *, fd_set *, fd_set *, const struct timeval *, const sigset_t *);
++ #endif
+diff --git a/patches/readline/0004-locale.patch b/patches/readline/0004-locale.patch
+new file mode 100644
+index 0000000..8cb6c69
+--- /dev/null
++++ b/patches/readline/0004-locale.patch
+@@ -0,0 +1,46 @@
++--- readline-8.2/nls.c.orig	2022-11-22 18:41:48.302144300 +0100
+++++ readline-8.2/nls.c	2022-12-03 18:37:54.991412600 +0100
++@@ -49,6 +49,11 @@
++ 
++ #include <ctype.h>
++ 
+++#if defined (_WIN32)
+++#  include <windows.h>
+++#  include <versionhelpers.h>
+++#endif
+++
++ #include "rldefs.h"
++ #include "readline.h"
++ #include "rlshell.h"
++@@ -109,7 +114,11 @@
++   char *cp;
++   size_t len;
++ 
++-#if HAVE_LANGINFO_CODESET
+++#if defined (_WIN32)
+++  /* On Windows, the relevant "locale" is the selected codepage of the used
+++     console. */
+++  return (IsWindows7OrGreater () && (GetConsoleCP () == 65001));
+++#elif HAVE_LANGINFO_CODESET
++   cp = nl_langinfo (CODESET);
++   return (STREQ (cp, "UTF-8") || STREQ (cp, "utf8"));
++ #else
++@@ -138,11 +147,18 @@
++ #if defined (HAVE_SETLOCALE)
++   if (lspec == 0 || *lspec == 0)
++     lspec = setlocale (LC_CTYPE, (char *)NULL);
+++#if defined (_WIN32)
+++  /* Setting an UTF-8 locale is not a no-op on Windows.  Instead the
+++     information about the locale is lost.  Use whatever we got at this
+++     point. */
+++  ret = lspec;
+++#else
++   if (lspec == 0)
++     lspec = "";
++   ret = setlocale (LC_CTYPE, lspec);	/* ok, since it does not change locale */
++   if (ret == 0 || *ret == 0)
++     ret = setlocale (LC_CTYPE, (char *)NULL);
+++#endif
++   if (ret == 0 || *ret == 0)
++     ret = RL_DEFAULT_LOCALE;
++ #else
+diff --git a/patches/readline/Fixed-missing-POSIX_SIGNALS-check.patch b/patches/readline/Fixed-missing-POSIX_SIGNALS-check.patch
+deleted file mode 100644
+index 72ed624..0000000
+--- a/patches/readline/Fixed-missing-POSIX_SIGNALS-check.patch
++++ /dev/null
+@@ -1,20 +0,0 @@
+-diff --git a/signals.c b/signals.c
+-index f9174ab..9bf56db 100644
+---- a/signals.c
+-+++ b/signals.c
+-@@ -265,10 +265,10 @@ _rl_handle_signal (int sig)
+- #if defined (SIGQUIT)
+-     case SIGQUIT:
+- #endif
+--
+-+#if defined (HAVE_POSIX_SIGNALS)
+-       if (block_sig)
+- 	sigprocmask (SIG_BLOCK, &set, &oset);
+--
+-+#endif
+-       rl_echo_signal_char (sig);
+-       rl_cleanup_after_signal ();
+- 
+--- 
+-2.31.1.windows.1
+-
+diff --git a/patches/readline/readline81-001.patch b/patches/readline/readline81-001.patch
+deleted file mode 100644
+index 2f99282..0000000
+--- a/patches/readline/readline81-001.patch
++++ /dev/null
+@@ -1,92 +0,0 @@
+-			   READLINE PATCH REPORT
+-			   =====================
+-
+-Readline-Release: 8.1
+-Patch-ID: readline81-001
+-
+-Bug-Reported-by:	Tom Tromey <tom@tromey.com>
+-Bug-Reference-ID:	<875z3u9fd0.fsf@tromey.com>
+-Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-readline/2021-01/msg00009.html
+-
+-Bug-Description:
+-
+-The code to check readline versions in an inputrc file had the sense of the
+-comparisons reversed.
+-
+-Patch (apply with `patch -p0'):
+-
+-*** ../readline-8.1-patched/bind.c	2020-10-26 10:03:14.000000000 -0400
+---- bind.c	2021-01-18 16:38:48.000000000 -0500
+-***************
+-*** 1235,1239 ****
+-    else if (_rl_strnicmp (args, "version", 7) == 0)
+-      {
+-!       int rlversion, versionarg, op, previ, major, minor;
+-  
+-        _rl_parsing_conditionalized_out = 1;
+---- 1235,1239 ----
+-    else if (_rl_strnicmp (args, "version", 7) == 0)
+-      {
+-!       int rlversion, versionarg, op, previ, major, minor, opresult;
+-  
+-        _rl_parsing_conditionalized_out = 1;
+-***************
+-*** 1295,1316 ****
+-  	{
+-  	case OP_EQ:
+-! 	  _rl_parsing_conditionalized_out = rlversion == versionarg;
+-  	  break;
+-  	case OP_NE:
+-! 	  _rl_parsing_conditionalized_out = rlversion != versionarg;
+-  	  break;
+-  	case OP_GT:
+-! 	  _rl_parsing_conditionalized_out = rlversion > versionarg;
+-  	  break;
+-  	case OP_GE:
+-! 	  _rl_parsing_conditionalized_out = rlversion >= versionarg;
+-  	  break;
+-  	case OP_LT:
+-! 	  _rl_parsing_conditionalized_out = rlversion < versionarg;
+-  	  break;
+-  	case OP_LE:
+-! 	  _rl_parsing_conditionalized_out = rlversion <= versionarg;
+-  	  break;
+-  	}
+-      }
+-    /* Check to see if the first word in ARGS is the same as the
+---- 1295,1317 ----
+-  	{
+-  	case OP_EQ:
+-!  	  opresult = rlversion == versionarg;
+-  	  break;
+-  	case OP_NE:
+-! 	  opresult = rlversion != versionarg;
+-  	  break;
+-  	case OP_GT:
+-! 	  opresult = rlversion > versionarg;
+-  	  break;
+-  	case OP_GE:
+-! 	  opresult = rlversion >= versionarg;
+-  	  break;
+-  	case OP_LT:
+-! 	  opresult = rlversion < versionarg;
+-  	  break;
+-  	case OP_LE:
+-! 	  opresult = rlversion <= versionarg;
+-  	  break;
+-  	}
+-+       _rl_parsing_conditionalized_out = 1 - opresult;
+-      }
+-    /* Check to see if the first word in ARGS is the same as the
+-
+-*** ../readline-8.1/patchlevel	2013-11-15 08:11:11.000000000 -0500
+---- patchlevel	2014-03-21 08:28:40.000000000 -0400
+-***************
+-*** 1,3 ****
+-  # Do not edit -- exists only for use by patch
+-  
+-! 0
+---- 1,3 ----
+-  # Do not edit -- exists only for use by patch
+-  
+-! 1
+diff --git a/patches/readline/readline82-001.patch b/patches/readline/readline82-001.patch
+new file mode 100644
+index 0000000..a13ff42
+--- /dev/null
++++ b/patches/readline/readline82-001.patch
+@@ -0,0 +1,42 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-001
++
++Bug-Reported-by:	Kan-Ru Chen <koster@debian.org>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1021109
++
++Bug-Description:
++
++Starting a readline application with an invalid locale specification for
++LC_ALL/LANG/LC_CTYPE can cause it crash on the first call to readline.
++
++Patch (apply with `patch -p0'):
++
++*** ../readline-8.2-patched/nls.c	2022-08-15 09:38:51.000000000 -0400
++--- nls.c	2022-10-05 09:23:22.000000000 -0400
++***************
++*** 142,145 ****
++--- 142,149 ----
++      lspec = "";
++    ret = setlocale (LC_CTYPE, lspec);	/* ok, since it does not change locale */
+++   if (ret == 0 || *ret == 0)
+++     ret = setlocale (LC_CTYPE, (char *)NULL);
+++   if (ret == 0 || *ret == 0)
+++     ret = RL_DEFAULT_LOCALE;
++  #else
++    ret = (lspec == 0 || *lspec == 0) ? RL_DEFAULT_LOCALE : lspec;
++
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 0
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 1
+diff --git a/patches/readline/readline82-002.patch b/patches/readline/readline82-002.patch
+new file mode 100644
+index 0000000..453b9b8
+--- /dev/null
++++ b/patches/readline/readline82-002.patch
+@@ -0,0 +1,48 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-002
++
++Bug-Reported-by:	srobertson@peratonlabs.com
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-bash/2022-09/msg00049.html
++
++Bug-Description:
++
++It's possible for readline to try to zero out a line that's not null-
++terminated, leading to a memory fault.
++
++Patch (apply with `patch -p0'):
++
++*** ../readline-8.2-patched/display.c	2022-04-05 10:47:31.000000000 -0400
++--- display.c	2022-12-13 13:11:22.000000000 -0500
++***************
++*** 2684,2692 ****
++  
++    if (visible_line)
++!     {
++!       temp = visible_line;
++!       while (*temp)
++! 	*temp++ = '\0';
++!     }
++    rl_on_new_line ();
++    forced_display++;
++--- 2735,2740 ----
++  
++    if (visible_line)
++!     memset (visible_line, 0, line_size);
++! 
++    rl_on_new_line ();
++    forced_display++;
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 1
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 2
+diff --git a/patches/readline/readline82-003.patch b/patches/readline/readline82-003.patch
+new file mode 100644
+index 0000000..e9fe2c0
+--- /dev/null
++++ b/patches/readline/readline82-003.patch
+@@ -0,0 +1,43 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-003
++
++Bug-Reported-by:	Stefan Klinger <readline-gnu.org@stefan-klinger.de>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-readline/2023-08/msg00018.html
++
++Bug-Description:
++
++Patch (apply with `patch -p0'):
++
++The custom color prefix that readline uses to color possible completions
++must have a leading `.'.
++
++*** ../readline-8.2-patched/colors.c	2021-12-08 11:38:25.000000000 -0500
++--- colors.c	2023-08-28 16:40:04.000000000 -0400
++***************
++*** 74,78 ****
++  static void restore_default_color (void);
++  
++! #define RL_COLOR_PREFIX_EXTENSION	"readline-colored-completion-prefix"
++  
++  COLOR_EXT_TYPE *_rl_color_ext_list = 0;
++--- 74,78 ----
++  static void restore_default_color (void);
++  
++! #define RL_COLOR_PREFIX_EXTENSION	".readline-colored-completion-prefix"
++  
++  COLOR_EXT_TYPE *_rl_color_ext_list = 0;
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 2
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 3
+diff --git a/patches/readline/readline82-004.patch b/patches/readline/readline82-004.patch
+new file mode 100644
+index 0000000..d60c662
+--- /dev/null
++++ b/patches/readline/readline82-004.patch
+@@ -0,0 +1,65 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-004
++
++Bug-Reported-by:	Henry Bent <henry.r.bent@gmail.com>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-bash/2022-11/msg00044.html
++
++Bug-Description:
++
++Patch (apply with `patch -p0'):
++
++There are systems that supply one of select or pselect, but not both.
++
++*** ../readline-8.2-patched/input.c	2022-04-08 15:43:24.000000000 -0400
++--- input.c	2022-11-28 09:41:08.000000000 -0500
++***************
++*** 152,156 ****
++--- 152,158 ----
++  int _rl_timeout_init (void);
++  int _rl_timeout_sigalrm_handler (void);
+++ #if defined (RL_TIMEOUT_USE_SELECT)
++  int _rl_timeout_select (int, fd_set *, fd_set *, fd_set *, const struct timeval *, const sigset_t *);
+++ #endif
++  
++  static void _rl_timeout_handle (void);
++***************
++*** 249,253 ****
++    int chars_avail, k;
++    char input;
++! #if defined(HAVE_SELECT)
++    fd_set readfds, exceptfds;
++    struct timeval timeout;
++--- 251,255 ----
++    int chars_avail, k;
++    char input;
++! #if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
++    fd_set readfds, exceptfds;
++    struct timeval timeout;
++***************
++*** 806,810 ****
++    unsigned char c;
++    int fd;
++! #if defined (HAVE_PSELECT)
++    sigset_t empty_set;
++    fd_set readfds;
++--- 815,819 ----
++    unsigned char c;
++    int fd;
++! #if defined (HAVE_PSELECT) || defined (HAVE_SELECT)
++    sigset_t empty_set;
++    fd_set readfds;
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 3
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 4
+diff --git a/patches/readline/readline82-005.patch b/patches/readline/readline82-005.patch
+new file mode 100644
+index 0000000..57f507f
+--- /dev/null
++++ b/patches/readline/readline82-005.patch
+@@ -0,0 +1,50 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-005
++
++Bug-Reported-by:	Simon Marchi <simon.marchi@polymtl.ca>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-readline/2022-09/msg00005.html
++
++Bug-Description:
++
++If an application is using readline in callback mode, and a signal arrives
++after readline checks for it in rl_callback_read_char() but before it
++restores the application's signal handlers, it won't get processed until the
++next time the application calls rl_callback_read_char(). Readline needs to
++check for and resend any pending signals after restoring the application's
++signal handlers.
++
++Patch (apply with `patch -p0'):
++
++*** ../readline-8.2-patched/callback.c	2022-04-29 12:02:56.000000000 -0400
++--- callback.c	2022-10-11 10:59:06.000000000 -0400
++***************
++*** 116,120 ****
++    do { \
++      if (rl_persistent_signal_handlers == 0) \
++!       rl_clear_signals (); \
++      return; \
++    } while (0)
++--- 116,123 ----
++    do { \
++      if (rl_persistent_signal_handlers == 0) \
++!       { \
++!         rl_clear_signals (); \
++!         if (_rl_caught_signal) _rl_signal_handler (_rl_caught_signal); \
++!       } \
++      return; \
++    } while (0)
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 4
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 5
+diff --git a/patches/readline/readline82-006.patch b/patches/readline/readline82-006.patch
+new file mode 100644
+index 0000000..9e315e8
+--- /dev/null
++++ b/patches/readline/readline82-006.patch
+@@ -0,0 +1,99 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-006
++
++Bug-Reported-by:	Tom de Vries <tdevries@suse.de>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-readline/2022-09/msg00001.html
++
++Bug-Description:
++
++This is a variant of the same issue as the one fixed by patch 5. In this
++case, the signal arrives and is pending before readline calls rl_getc().
++When this happens, the pending signal will be handled by the loop, but may
++alter or destroy some state that the callback uses. Readline needs to treat
++this case the same way it would if a signal interrupts pselect/select, so
++compound operations like searches and reading numeric arguments get cleaned
++up properly.
++
++Patch (apply with `patch -p0'):
++
++*** ../readline-8.2-patched/input.c	2022-12-22 16:15:48.000000000 -0500
++--- input.c	2023-01-10 11:53:45.000000000 -0500
++***************
++*** 812,816 ****
++  rl_getc (FILE *stream)
++  {
++!   int result;
++    unsigned char c;
++    int fd;
++--- 812,816 ----
++  rl_getc (FILE *stream)
++  {
++!   int result, ostate, osig;
++    unsigned char c;
++    int fd;
++***************
++*** 823,828 ****
++--- 823,842 ----
++    while (1)
++      {
+++       osig = _rl_caught_signal;
+++       ostate = rl_readline_state;
+++ 
++        RL_CHECK_SIGNALS ();
++  
+++ #if defined (READLINE_CALLBACKS)
+++       /* Do signal handling post-processing here, but just in callback mode
+++ 	 for right now because the signal cleanup can change some of the
+++ 	 callback state, and we need to either let the application have a
+++ 	 chance to react or abort some current operation that gets cleaned
+++ 	 up by rl_callback_sigcleanup(). If not, we'll just run through the
+++ 	 loop again. */
+++       if (osig != 0 && (ostate & RL_STATE_CALLBACK))
+++ 	goto postproc_signal;
+++ #endif
+++ 
++        /* We know at this point that _rl_caught_signal == 0 */
++  
++***************
++*** 888,891 ****
++--- 902,908 ----
++  
++  handle_error:
+++       osig = _rl_caught_signal;
+++       ostate = rl_readline_state;
+++ 
++        /* If the error that we received was EINTR, then try again,
++  	 this is simply an interrupted system call to read ().  We allow
++***************
++*** 928,933 ****
++--- 945,959 ----
++  #endif  /* SIGALRM */
++  
+++ postproc_signal:
+++       /* POSIX says read(2)/pselect(2)/select(2) don't return EINTR for any
+++ 	 reason other than being interrupted by a signal, so we can safely
+++ 	 call the application's signal event hook. */
++        if (rl_signal_event_hook)
++  	(*rl_signal_event_hook) ();
+++ #if defined (READLINE_CALLBACKS)
+++       else if (osig == SIGINT && (ostate & RL_STATE_CALLBACK) && (ostate & (RL_STATE_ISEARCH|RL_STATE_NSEARCH|RL_STATE_NUMERICARG)))
+++         /* just these cases for now */
+++         _rl_abort_internal ();
+++ #endif
++      }
++  }
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 5
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 6
+diff --git a/patches/readline/readline82-007.patch b/patches/readline/readline82-007.patch
+new file mode 100644
+index 0000000..b0394e0
+--- /dev/null
++++ b/patches/readline/readline82-007.patch
+@@ -0,0 +1,48 @@
++			   READLINE PATCH REPORT
++			   =====================
++
++Readline-Release: 8.2
++Patch-ID: readline82-007
++
++Bug-Reported-by:	Kevin Pulo <kev@pulo.com.au>
++Bug-Reference-ID:
++Bug-Reference-URL:	https://lists.gnu.org/archive/html/bug-readline/2022-11/msg00002.html
++
++Bug-Description:
++
++If readline is called with no prompt, it should display a newline if return
++is typed on an empty line. It should still suppress the final newline if
++return is typed on the last (empty) line of a multi-line command.
++
++Patch (apply with `patch -p0'):
++
++*** ../readline-8.2-patched/display.c	2022-04-05 10:47:31.000000000 -0400
++--- display.c	2022-12-13 13:11:22.000000000 -0500
++***************
++*** 3342,3348 ****
++  		 &last_face[_rl_screenwidth - 1 + woff], 1);
++      }
++!   _rl_vis_botlin = 0;
++!   if (botline_length > 0 || _rl_last_c_pos > 0)
++      rl_crlf ();
++    fflush (rl_outstream);
++    rl_display_fixed++;
++--- 3394,3400 ----
++  		 &last_face[_rl_screenwidth - 1 + woff], 1);
++      }
++!   if ((_rl_vis_botlin == 0 && botline_length == 0) || botline_length > 0 || _rl_last_c_pos > 0)
++      rl_crlf ();
+++   _rl_vis_botlin = 0;
++    fflush (rl_outstream);
++    rl_display_fixed++;
++*** ../readline-8.2/patchlevel	2013-11-15 08:11:11.000000000 -0500
++--- patchlevel	2014-03-21 08:28:40.000000000 -0400
++***************
++*** 1,3 ****
++  # Do not edit -- exists only for use by patch
++  
++! 6
++--- 1,3 ----
++  # Do not edit -- exists only for use by patch
++  
++! 7
 diff --git a/patches/readline/remove-export-all-flag.patch b/patches/readline/remove-export-all-flag.patch
 new file mode 100644
 index 0000000..4b112d3
@@ -1563,26 +2493,8 @@ index 0000000..1a93175
 + #ifdef STDC_HEADERS
 + #include <stdlib.h>
 + #include <string.h>
-diff --git a/scripts/3rdparty-post.sh b/scripts/3rdparty-post.sh
-index 24da07c..b27b26b 100644
---- a/scripts/3rdparty-post.sh
-+++ b/scripts/3rdparty-post.sh
-@@ -64,10 +64,10 @@ function python_deps_post {
- 	}
- 
- 	rm -f $LIBS_DIR/bin/{bz*,bunzip2}
--	rm -f $LIBS_DIR/bin/{tclsh.exe,tclsh86.exe,openssl.exe,capinfo.exe,captoinfo.exe,clear.exe,idle,infocmp.exe}
--	rm -f $LIBS_DIR/bin/{infotocap.exe,c_rehash,ncursesw5-config,reset.exe,sqlite3.exe,tabs.exe}
--	rm -f $LIBS_DIR/bin/{tic.exe,toe.exe,tput.exe,tset.exe,wish.exe,wish86.exe,xmlwf,testgdbm.exe}
-+	rm -f $LIBS_DIR/bin/{tclsh.exe,tclsh86.exe,openssl.exe,capinfo.exe,idle,c_rehash,ncursesw5-config,sqlite3.exe}
-+	rm -f $LIBS_DIR/bin/{wish.exe,wish86.exe,xmlwf,testgdbm.exe}
- 	rm -f $LIBS_DIR/bin/{lzmadec.exe,lzmainfo.exe,unxz.exe,xz*}
-+	rm -f $LIBS_DIR/bin/*-w64-mingw32-{captoinfo.exe,clear.exe,infocmp.exe,infotocap.exe,reset.exe,tabs.exe,tic.exe,toe.exe,tput.exe,tset.exe}
- 
- 	#rm -rf $LIBS_DIR/include
- 	rm -rf $LIBS_DIR/lib/pkgconfig
 diff --git a/scripts/binutils.sh b/scripts/binutils.sh
-index 90c0913..4f120c7 100644
+index 8d0b214..c1ec65c 100644
 --- a/scripts/binutils.sh
 +++ b/scripts/binutils.sh
 @@ -35,7 +35,7 @@
@@ -1630,32 +2542,57 @@ index 34f5e10..79aa350 100644
  )
  
  #
+diff --git a/scripts/gcc-13-branch.sh b/scripts/gcc-13-branch.sh
+index 8af959f..f6a3b40 100644
+--- a/scripts/gcc-13-branch.sh
++++ b/scripts/gcc-13-branch.sh
+@@ -59,6 +59,7 @@ PKG_PATCHES=(
+ 	gcc/gcc-10-libgcc-ldflags.patch
+ 	gcc/gcc-12-replace-abort-with-fancy_abort.patch
+ 	gcc/gcc-13-mcf-sjlj-avoid-infinite-recursion.patch
++	gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
+ )
+ 
+ #
 diff --git a/scripts/gcc-13.1.0.sh b/scripts/gcc-13.1.0.sh
-index ca2c736..7ba4c5c 100644
+index 924c804..4558714 100644
 --- a/scripts/gcc-13.1.0.sh
 +++ b/scripts/gcc-13.1.0.sh
-@@ -58,6 +58,7 @@ PKG_PATCHES=(
- 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+@@ -59,6 +59,8 @@ PKG_PATCHES=(
  	gcc/gcc-10-libgcc-ldflags.patch
-     gcc/gcc-12-replace-abort-with-fancy_abort.patch
-+    gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
+ 	gcc/gcc-12-replace-abort-with-fancy_abort.patch
+ 	gcc/gcc-13-mcf-sjlj-avoid-infinite-recursion.patch
++	gcc/gcc-13-fix-radix-sort-on-32bit-platforms.patch
++	gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
  )
  
  #
 diff --git a/scripts/gcc-13.2.0.sh b/scripts/gcc-13.2.0.sh
-index 575de3e..45ef356 100644
+index b73b870..30812b9 100644
 --- a/scripts/gcc-13.2.0.sh
 +++ b/scripts/gcc-13.2.0.sh
-@@ -58,6 +58,7 @@ PKG_PATCHES=(
- 	gcc/0020-libgomp-Don-t-hard-code-MS-printf-attributes.patch
+@@ -59,6 +59,7 @@ PKG_PATCHES=(
  	gcc/gcc-10-libgcc-ldflags.patch
  	gcc/gcc-12-replace-abort-with-fancy_abort.patch
+ 	gcc/gcc-13-mcf-sjlj-avoid-infinite-recursion.patch
++	gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
+ )
+ 
+ #
+diff --git a/scripts/gcc-trunk.sh b/scripts/gcc-trunk.sh
+index 9b24d7b..d7cecb0 100644
+--- a/scripts/gcc-trunk.sh
++++ b/scripts/gcc-trunk.sh
+@@ -59,6 +59,7 @@ PKG_PATCHES=(
+ 	gcc/gcc-10-libgcc-ldflags.patch
+ 	gcc/gcc-12-replace-abort-with-fancy_abort.patch
+ 	gcc/gcc-13-mcf-sjlj-avoid-infinite-recursion.patch
 +	gcc/gcc-13-lto-wrapper-skip-truncating-input-files.patch
  )
  
  #
 diff --git a/scripts/gdb.sh b/scripts/gdb.sh
-index c0bff32..1ab790a 100644
+index 105b35e..1ab790a 100644
 --- a/scripts/gdb.sh
 +++ b/scripts/gdb.sh
 @@ -35,7 +35,7 @@
@@ -1667,24 +2604,11 @@ index c0bff32..1ab790a 100644
  PKG_NAME=gdb-${PKG_VERSION}
  PKG_DIR_NAME=gdb-${PKG_VERSION}
  PKG_TYPE=.tar.xz
-@@ -81,9 +81,9 @@ PKG_CONFIGURE_FLAGS=(
- 	--disable-gdbtk
- 	#
- 	# the _WIN32_WINNT hack here because of: https://sourceware.org/pipermail/gdb/2022-November/050432.html
--	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1 -fcommon -D_WIN32_WINNT=0x0601\""
--	CXXFLAGS="\"$COMMON_CXXFLAGS -D__USE_MINGW_ANSI_STDIO=1 -D_WIN32_WINNT=0x0601\""
--	CPPFLAGS="\"$COMMON_CPPFLAGS\""
-+	CFLAGS="\"$COMMON_CFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -fcommon -DNCURSES_STATIC -D_WIN32_WINNT=0x0601\""
-+	CXXFLAGS="\"$COMMON_CXXFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC -D_WIN32_WINNT=0x0601\""
-+	CPPFLAGS="\"$COMMON_CPPFLAGS -I$LIBS_DIR/include/ncursesw -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC -D_WIN32_WINNT=0x0601\""
- 	LDFLAGS="\"$COMMON_LDFLAGS $( [[ $BUILD_ARCHITECTURE == i686 ]] && echo -Wl,--large-address-aware )\""
- )
- 
 diff --git a/scripts/gmp.sh b/scripts/gmp.sh
-index 0b590e1..c7ddb58 100644
+index 0b590e1..72a31db 100644
 --- a/scripts/gmp.sh
 +++ b/scripts/gmp.sh
-@@ -35,7 +35,7 @@
+@@ -35,12 +35,12 @@
  
  # **************************************************************************
  
@@ -1693,44 +2617,25 @@ index 0b590e1..c7ddb58 100644
  PKG_NAME=$BUILD_ARCHITECTURE-gmp-${PKG_VERSION}-$LINK_TYPE_SUFFIX
  PKG_DIR_NAME=gmp-${PKG_VERSION}
  PKG_TYPE=.tar.xz
-diff --git a/scripts/libffi.sh b/scripts/libffi.sh
-index 8d4445a..83aa1f4 100644
---- a/scripts/libffi.sh
-+++ b/scripts/libffi.sh
-@@ -35,21 +35,19 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=3.2.1
-+PKG_VERSION=3.4.4
- PKG_NAME=libffi-${PKG_VERSION}
- PKG_DIR_NAME=libffi-${PKG_VERSION}
- PKG_TYPE=.tar.gz
  PKG_URLS=(
--	"https://sourceware.org/pub/libffi/libffi-${PKG_VERSION}${PKG_TYPE}"
-+	"https://github.com/libffi/libffi/releases/download/v${PKG_VERSION}/libffi-${PKG_VERSION}${PKG_TYPE}"
+-	"https://ftpmirror.gnu.org/gmp/gmp-${PKG_VERSION}${PKG_TYPE}"
++	"https://ftpmirror.gnu.org/gnu/gmp/gmp-${PKG_VERSION}${PKG_TYPE}"
  )
  
- PKG_PRIORITY=extra
- 
- #
- 
--PKG_PATCHES=(
--	libffi/fix_return_size.patch
--)
-+PKG_PATCHES=()
- 
- #
- 
-@@ -60,7 +58,7 @@ PKG_CONFIGURE_FLAGS=(
- 	#
- 	--prefix=$LIBS_DIR
- 	#
--	$LINK_TYPE_STATIC
-+	$LINK_TYPE_SHARED
- 	#
- 	CFLAGS="\"$COMMON_CFLAGS\""
- 	CXXFLAGS="\"$COMMON_CXXFLAGS\""
+ PKG_PRIORITY=prereq
+diff --git a/scripts/isl.sh b/scripts/isl.sh
+index feaa409..b415ed4 100644
+--- a/scripts/isl.sh
++++ b/scripts/isl.sh
+@@ -51,7 +51,7 @@ elif [[ `echo $BUILD_VERSION | cut -d. -f1` -le 10 && ${BUILD_VERSION} != trunk
+    PKG_VERSION=0.23
+    PKG_TYPE=.tar.xz
+ else
+-   PKG_VERSION=0.25
++   PKG_VERSION=0.26
+    PKG_TYPE=.tar.xz
+ fi
+ PKG_NAME=$BUILD_ARCHITECTURE-isl-${PKG_VERSION}-$LINK_TYPE_SUFFIX
 diff --git a/scripts/licenses.sh b/scripts/licenses.sh
 index 600b05d..912fcf7 100644
 --- a/scripts/licenses.sh
@@ -1760,7 +2665,7 @@ index 5fea105..1ff7114 100644
  			)
  			[[ $? == 0 ]] && {
 diff --git a/scripts/mingw-w64-download.sh b/scripts/mingw-w64-download.sh
-index 91c2d9a..49351bc 100644
+index 91c2d9a..96360e1 100644
 --- a/scripts/mingw-w64-download.sh
 +++ b/scripts/mingw-w64-download.sh
 @@ -49,6 +49,11 @@ PKG_NAME=mingw-w64-${RUNTIME_VERSION}
@@ -1769,7 +2674,7 @@ index 91c2d9a..49351bc 100644
  	)
 +	[[ $RUNTIME_BRANCH == master ]] && {
 +		PKG_EXECUTE_AFTER_UNCOMPRESS=(
-+			"git reset --hard cc481d54bda1735328e084879344ce0046a84d3d" # Reset to this commit hash for reproducible builds
++			"git reset --hard 662e1305f86aa797eb7c79c5ae9c63137c79d855" # Reset to this commit hash for reproducible builds
 +		)
 +	}
  }
@@ -1789,7 +2694,7 @@ index 78a0bea..6136abe 100644
  PKG_DIR_NAME=mpc-${PKG_VERSION}
  PKG_TYPE=.tar.gz
 diff --git a/scripts/mpfr.sh b/scripts/mpfr.sh
-index 21bcf32..f24dea0 100644
+index 21bcf32..d598594 100644
 --- a/scripts/mpfr.sh
 +++ b/scripts/mpfr.sh
 @@ -35,7 +35,7 @@
@@ -1797,7 +2702,7 @@ index 21bcf32..f24dea0 100644
  # **************************************************************************
  
 -PKG_VERSION=4.1.0
-+PKG_VERSION=4.2.0
++PKG_VERSION=4.2.1
  PKG_NAME=$BUILD_ARCHITECTURE-mpfr-${PKG_VERSION}-$LINK_TYPE_SUFFIX
  PKG_DIR_NAME=mpfr-${PKG_VERSION}
  PKG_TYPE=.tar.xz
@@ -1824,7 +2729,7 @@ index 1cbca9d..b8b5867 100644
  
  #
 diff --git a/scripts/openssl.sh b/scripts/openssl.sh
-index e5a3d94..1d1bd6e 100644
+index e5a3d94..9cfbaf7 100644
 --- a/scripts/openssl.sh
 +++ b/scripts/openssl.sh
 @@ -35,7 +35,7 @@
@@ -1832,57 +2737,25 @@ index e5a3d94..1d1bd6e 100644
  # **************************************************************************
  
 -PKG_VERSION=3.1.1
-+PKG_VERSION=3.1.3
++PKG_VERSION=3.2.0
  PKG_NAME=openssl-${PKG_VERSION}
  PKG_DIR_NAME=openssl-${PKG_VERSION}
  PKG_TYPE=.tar.gz
 diff --git a/scripts/python-3.sh b/scripts/python-3.sh
-index 58c0605..3799401 100644
+index c43faf3..bf4d741 100644
 --- a/scripts/python-3.sh
 +++ b/scripts/python-3.sh
-@@ -35,7 +35,7 @@
- 
- # **************************************************************************
- 
--PKG_VERSION=3.9.10
-+PKG_VERSION=3.11.5
- PKG_NAME=Python-${PKG_VERSION}
- PKG_DIR_NAME=Python-${PKG_VERSION}
- PKG_TYPE=git
-@@ -48,13 +48,13 @@ PKG_PRIORITY=extra
+@@ -48,7 +48,7 @@ PKG_PRIORITY=extra
  #
  
  PKG_EXECUTE_AFTER_UNCOMPRESS=(
--	"git reset --hard 12d1cb5" # Reset to this commit hash for reproducible builds
-+	"git reset --hard 7a3aacf3cba0c35f8621a78fc2d239fe2c878c63" # Reset to this commit hash for reproducible builds
- )
- 
- #
- 
- PKG_PATCHES=(
--	python3/0100-get-libraries-tuple-append-list.patch
-+	Python3/python-3.11-remove-WASM_STDLIB-target.patch
- )
- 
- #
-@@ -101,10 +101,12 @@ PKG_CONFIGURE_FLAGS=(
- 	# --with-tzpath=$LIBS_DIR/share/zoneinfo
- 	--enable-optimizations
- 	#
--	LIBFFI_INCLUDEDIR="$LIBSW_DIR/lib/libffi-$LIBFFI_VERSION/include"
--	CFLAGS="\"$COMMON_CFLAGS -D__USE_MINGW_ANSI_STDIO=1\""
--	CPPFLAGS="\"$COMMON_CPPFLAGS $MY_CPPFLAGS\""
-+	LIBFFI_INCLUDEDIR="$LIBSW_DIR/include"
-+	PKG_CONFIG_PATH="$PREREQ_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib/pkgconfig:$LIBS_DIR/lib/pkgconfig"
-+	CFLAGS="\"$COMMON_CFLAGS $MY_CPPFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
-+	CPPFLAGS="\"$COMMON_CPPFLAGS $MY_CPPFLAGS -D__USE_MINGW_ANSI_STDIO=1 -DNCURSES_STATIC\""
- 	LDFLAGS="\"$COMMON_LDFLAGS -L$PREREQW_DIR/$BUILD_ARCHITECTURE-zlib-$LINK_TYPE_SUFFIX/lib -L$LIBSW_DIR/lib\""
-+	LIBS="\"-lffi -ltcl -ltk -lole32 -loleaut32 -luuid\""
+-	"git reset --hard f8ce319d46c25b8afe6083284315169d8f418880" # Reset to this commit hash for reproducible builds
++	"git reset --hard 9599c1cbffc8b1889f661b4da6463252e0722bed" # Reset to this commit hash for reproducible builds
  )
  
  #
 diff --git a/scripts/readline.sh b/scripts/readline.sh
-index e7f1d90..9675bcd 100644
+index e7f1d90..a272bd1 100644
 --- a/scripts/readline.sh
 +++ b/scripts/readline.sh
 @@ -35,7 +35,7 @@
@@ -1890,23 +2763,35 @@ index e7f1d90..9675bcd 100644
  # **************************************************************************
  
 -PKG_VERSION=8.1
-+PKG_VERSION=8.1.2
++PKG_VERSION=8.2
  PKG_NAME=readline-${PKG_VERSION}
  PKG_DIR_NAME=readline-${PKG_VERSION}
  PKG_TYPE=.tar.gz
-@@ -48,8 +48,9 @@ PKG_PRIORITY=extra
+@@ -48,8 +48,20 @@ PKG_PRIORITY=extra
  #
  
  PKG_PATCHES=(
 -	readline/readline81-001.patch
-+	#readline/readline81-001.patch
- 	readline/Fixed-missing-POSIX_SIGNALS-check.patch
+-	readline/Fixed-missing-POSIX_SIGNALS-check.patch
++	readline/readline82-001.patch
++	readline/readline82-002.patch
++	readline/readline82-003.patch
++	readline/readline82-004.patch
++	readline/readline82-005.patch
++	readline/readline82-006.patch
++	readline/readline82-007.patch
++	# patches imported from msys2
++	readline/0001-sigwinch.patch
++	readline/0002-event-hook.patch
++	readline/0003-fd_set.patch
++	readline/0004-locale.patch
++	#
 +	readline/remove-export-all-flag.patch
  )
  
  #
 diff --git a/scripts/sqlite.sh b/scripts/sqlite.sh
-index 4233f82..56350ac 100644
+index 4233f82..28180aa 100644
 --- a/scripts/sqlite.sh
 +++ b/scripts/sqlite.sh
 @@ -35,12 +35,12 @@
@@ -1914,7 +2799,7 @@ index 4233f82..56350ac 100644
  # **************************************************************************
  
 -PKG_VERSION=3350500
-+PKG_VERSION=3420000
++PKG_VERSION=3440200
  PKG_NAME=sqlite-${PKG_VERSION}
  PKG_DIR_NAME=sqlite-autoconf-${PKG_VERSION}
  PKG_TYPE=.tar.gz
@@ -1972,7 +2857,7 @@ index 457bfd1..ac151e2 100644
  PKG_DIR_NAME=tk${PKG_VERSION}
  PKG_SUBDIR_NAME=win
 diff --git a/scripts/xz-utils.sh b/scripts/xz-utils.sh
-index 088ad44..56d556e 100644
+index 088ad44..9c4c044 100644
 --- a/scripts/xz-utils.sh
 +++ b/scripts/xz-utils.sh
 @@ -35,7 +35,7 @@
@@ -1980,7 +2865,7 @@ index 088ad44..56d556e 100644
  # **************************************************************************
  
 -PKG_VERSION=5.4.3
-+PKG_VERSION=5.4.4
++PKG_VERSION=5.4.5
  PKG_NAME=xz-${PKG_VERSION}
  PKG_DIR_NAME=xz-${PKG_VERSION}
  PKG_TYPE=.tar.xz
