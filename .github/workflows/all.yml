@@ -50,8 +50,6 @@ jobs:
             exceptions: 'seh'
           - arch: 'x86_64'
             exceptions: 'dwarf'
-          - threading: 'mcf'
-            exceptions: 'sjlj'
 
     defaults:
       run:
@@ -105,7 +103,7 @@ jobs:
         uses: actions/checkout@v3
         with:
           repository: starg2/mingw-builds
-          ref: b876df909372d7fb0ab21aa58ce1b7c0df813dbe
+          ref: d4f30d4359dd13a58fb8fc39663eb2af971fee74
           path: mingw-builds
 
       - name: Patch build scripts (mingw-builds.patch)
