@@ -136,7 +136,7 @@ jobs:
           --with-default-msvcrt=${{ matrix.crt }}
           --provided-toolchain=/d/toolchains
           --enable-languages=c,c++
-          --jobs=2
+          --jobs=4
           --bin-compress
           --src-compress
           --logviewer-command=cat
