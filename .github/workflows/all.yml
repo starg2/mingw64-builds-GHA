@@ -106,10 +106,6 @@ jobs:
           ref: custom
           path: mingw-builds
 
-      - name: Patch build scripts (mingw-builds.patch)
-        run: git apply $GITHUB_WORKSPACE/mingw64-builds-GHA/build-patch/mingw-builds.patch
-        working-directory: mingw-builds
-
       - name: Install host toolchain (i686)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
         run: |
