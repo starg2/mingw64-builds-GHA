@@ -106,6 +106,10 @@ jobs:
           ref: custom
           path: mingw-builds
 
+      - name: Show HEAD
+        run: git show --summary
+        working-directory: mingw-builds
+
       - name: Install host toolchain (i686)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
         run: |
