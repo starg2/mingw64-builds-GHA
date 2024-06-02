@@ -32,6 +32,10 @@ on:
         required: true
         type: string
         default: '["msvcrt", "ucrt"]'
+      tagname:
+        description: 'tagname'
+        required: false
+        type: string
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -147,3 +151,23 @@ jobs:
         with:
           name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
           path: C:/build/${{ matrix.mode }}/archives/*.7z
+  release:
+    if: ${{ github.event.inputs.tagname != '' }}
+    needs: build
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/download-artifact@v4
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.tagname }}
+          files: '*.zip'
+          draft: true
