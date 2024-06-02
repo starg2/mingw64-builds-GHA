@@ -169,5 +169,5 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.tagname }}
-          files: '*.zip'
+          files: '*.7z'
           draft: true
