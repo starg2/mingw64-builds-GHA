@@ -32,6 +32,11 @@ on:
         required: true
         type: string
         default: '["msvcrt", "ucrt"]'
+      extras:
+        description: 'extras'
+        required: true
+        type: boolean
+        default: true
       tagname:
         description: 'tagname'
         required: false
@@ -145,6 +150,7 @@ jobs:
           --src-compress
           --logviewer-command=cat
           --wait-for-logviewer
+          $( [[ "${{ github.event.inputs.extras }}" == "false" ]] && echo "--no-extras" )
         working-directory: mingw-builds
 
       - uses: actions/upload-artifact@v4
