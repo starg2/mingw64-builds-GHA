@@ -122,16 +122,16 @@ jobs:
       - name: Install host toolchain (i686)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2025-02-25/gcc-14.2.0_i686-posix-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
-          7z e gcc-14.2.0_i686-posix-${{ matrix.exceptions }}-${{ matrix.crt }}.zip gcc-14.2.0_i686-posix-${{ matrix.exceptions }}-${{ matrix.crt }}/i686-14.2.0-release-posix-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z
-          7z x i686-14.2.0-release-posix-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z -o/d/toolchains
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2025-03-04/gcc-14.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-14.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip gcc-14.2.0_i686-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}/i686-14.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z
+          7z x i686-14.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z -o/d/toolchains
 
       - name: Install host toolchain (x86_64)
         if: ${{ matrix.arch == 'x86_64' || matrix.exceptions == 'sjlj' }}
         run: |
-          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2025-02-25/gcc-14.2.0_x86_64-posix-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
-          7z e gcc-14.2.0_x86_64-posix-${{ matrix.exceptions }}-${{ matrix.crt }}.zip gcc-14.2.0_x86_64-posix-${{ matrix.exceptions }}-${{ matrix.crt }}/x86_64-14.2.0-release-posix-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z
-          7z x x86_64-14.2.0-release-posix-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z -o/d/toolchains
+          curl.exe -L -O https://github.com/starg2/mingw64-builds-GHA/releases/download/v2025-03-04/gcc-14.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip
+          7z e gcc-14.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}.zip gcc-14.2.0_x86_64-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}/x86_64-14.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z
+          7z x x86_64-14.2.0-release-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}-rt_v13.7z -o/d/toolchains
 
       - name: Build
         run: >-
