@@ -11,7 +11,7 @@ on:
         description: 'modes'
         required: true
         type: string
-        default: '["gcc-15.1.0"]'
+        default: '["gcc-15.2.0"]'
       arch:
         description: 'arch'
         required: true
