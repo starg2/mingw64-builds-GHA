@@ -145,6 +145,7 @@ jobs:
           --with-default-msvcrt=${{ matrix.crt }}
           --provided-toolchain=/d/toolchains
           --enable-languages=c,c++
+          --enable-tls
           --jobs=4
           --bin-compress
           --src-compress
