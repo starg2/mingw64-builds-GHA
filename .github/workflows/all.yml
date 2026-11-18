@@ -119,6 +119,14 @@ jobs:
         run: git show --summary
         working-directory: mingw-builds
 
+      - name: Randomly select a GNU mirror server
+        shell: msys2 {0}
+        run: |
+          urls=("https://mirrors.ocf.berkeley.edu/gnu/" "https://mirror.techrich.hk/gnu/" "https://mirror.team-cymru.com/gnu/" "https://mirror.cs.odu.edu/gnu/")
+          selected_mirror="${urls[$RANDOM % ${#urls[@]}]}"
+          echo "GNU mirror server to use: $selected_mirror"
+          echo "GNU_URL_PREFIX=$selected_mirror" >> $GITHUB_ENV
+
       - name: Install host toolchain (i686)
         if: ${{ matrix.arch == 'i686' || matrix.exceptions == 'sjlj' }}
         run: |
@@ -146,6 +154,7 @@ jobs:
           --provided-toolchain=/d/toolchains
           --enable-languages=c,c++
           --enable-tls
+          --gnu-url-prefix=$GNU_URL_PREFIX
           --jobs=4
           --bin-compress
           --src-compress
