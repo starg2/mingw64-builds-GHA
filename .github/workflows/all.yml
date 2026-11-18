@@ -104,12 +104,12 @@ jobs:
 
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout the current repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           path: mingw64-builds-GHA
 
       - name: Get build scripts
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: starg2/mingw-builds
           ref: custom
@@ -163,7 +163,7 @@ jobs:
           $( [[ "${{ github.event.inputs.extras }}" == "false" ]] && echo "--no-extras" )
         working-directory: mingw-builds
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.mode }}_${{ matrix.arch }}-${{ matrix.threading }}-${{ matrix.exceptions }}-${{ matrix.crt }}
           path: C:/build/${{ matrix.mode }}/archives/*.7z
@@ -181,7 +181,7 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
 
       - name: Zip artifacts
         run: ls -Directory | % { 7z a ($_.Name + '.zip') ($_.Name + '\*') -mx0 }
